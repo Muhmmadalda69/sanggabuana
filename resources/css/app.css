@@ -1,0 +1,241 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --color-forest-50: #f0fdf4;
+    --color-forest-100: #dcfce7;
+    --color-forest-200: #bbf7d0;
+    --color-forest-300: #86efac;
+    --color-forest-400: #4ade80;
+    --color-forest-500: #22c55e;
+    --color-forest-600: #16a34a;
+    --color-forest-700: #15803d;
+    --color-forest-800: #166534;
+    --color-forest-900: #14532d;
+    --color-forest-950: #052e16;
+    --color-earth-50: #fdf8f0;
+    --color-earth-100: #f5ead6;
+    --color-earth-200: #e8d5b0;
+    --color-earth-300: #d4b684;
+    --color-earth-400: #c49b5f;
+    --color-earth-500: #b88a47;
+    --color-earth-600: #a4713b;
+    --color-earth-700: #885833;
+    --color-earth-800: #6f482e;
+    --color-earth-900: #5c3c28;
+    --color-earth-950: #341e13;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #052e16; }
+::-webkit-scrollbar-thumb { background: #15803d; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #16a34a; }
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* Hero parallax effect */
+.hero-gradient {
+    background: linear-gradient(
+        135deg,
+        rgba(5, 46, 22, 0.92) 0%,
+        rgba(20, 83, 45, 0.85) 30%,
+        rgba(21, 128, 61, 0.75) 60%,
+        rgba(22, 101, 52, 0.88) 100%
+    );
+}
+
+/* Glassmorphism card */
+.glass-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-card-light {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Floating animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-float-delayed { animation: float 4s ease-in-out 1s infinite; }
+.animate-float-slow { animation: float 6s ease-in-out infinite; }
+
+/* Fade up animation */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+}
+
+/* Stagger children */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
+/* Destination card hover */
+.destination-card {
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.destination-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 60px -15px rgba(5, 46, 22, 0.35);
+}
+.destination-card:hover .destination-image {
+    transform: scale(1.08);
+}
+.destination-image {
+    transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Mountain shape divider */
+.mountain-divider {
+    position: relative;
+}
+.mountain-divider::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,80 L0,40 Q180,0 360,35 Q540,70 720,25 Q900,-10 1080,30 Q1260,65 1440,20 L1440,80 Z' fill='%23f0fdf4'/%3E%3C/svg%3E") no-repeat center bottom;
+    background-size: cover;
+}
+
+.mountain-divider-dark::after {
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,80 L0,40 Q180,0 360,35 Q540,70 720,25 Q900,-10 1080,30 Q1260,65 1440,20 L1440,80 Z' fill='%23052e16'/%3E%3C/svg%3E") no-repeat center bottom;
+    background-size: cover;
+}
+
+/* Button glow effect */
+.btn-glow {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+.btn-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.6s ease;
+}
+.btn-glow:hover::before {
+    left: 100%;
+}
+.btn-glow:hover {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+}
+
+/* Gallery hover */
+.gallery-item {
+    transition: all 0.4s ease;
+}
+.gallery-item:hover {
+    transform: scale(1.03);
+}
+.gallery-item:hover .gallery-overlay {
+    opacity: 1;
+}
+.gallery-overlay {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+/* Testimonial card */
+.testimonial-card {
+    transition: all 0.4s ease;
+}
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -15px rgba(5, 46, 22, 0.2);
+}
+
+/* Leaf decoration */
+@keyframes sway {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+.animate-sway { animation: sway 3s ease-in-out infinite; }
+
+/* Navbar transparent to solid */
+.navbar-scroll {
+    background: rgba(5, 46, 22, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Stats counter */
+.stat-number {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Section title underline */
+.section-title-line {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #22c55e, #4ade80);
+    border-radius: 2px;
+}
+
+/* Pulse ring */
+@keyframes pulseRing {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+.pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 2px solid #22c55e;
+    animation: pulseRing 2s ease infinite;
+}
+
+/* Admin sidebar */
+.admin-sidebar-link {
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+.admin-sidebar-link:hover,
+.admin-sidebar-link.active {
+    background: rgba(34, 197, 94, 0.1);
+    border-left-color: #22c55e;
+    color: #22c55e;
+}
+
+/* Mobile menu animation */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.mobile-menu-enter {
+    animation: slideDown 0.3s ease forwards;
+}
