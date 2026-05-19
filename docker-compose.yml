@@ -20,7 +20,9 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-sanggabuana}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_USER: ${DB_USERNAME:-sanggabuana}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
     volumes:
       - sanggabuana_db_data:/var/lib/mysql
     ports:
