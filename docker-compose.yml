@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sanggabuana_app
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - sanggabuana_storage:/var/www/html/storage
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  db:
+    image: mysql:8.0
+    container_name: sanggabuana_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-sanggabuana}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - sanggabuana_db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  sanggabuana_storage:
+  sanggabuana_db_data:
