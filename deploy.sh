@@ -44,7 +44,11 @@ done
 
 # 4. Run database migrations inside the app container
 echo "Running database migrations..."
-docker compose exec -T app php artisan migrate --force
+docker compose exec -T app php artisan migrate
+
+# 4.5 Link storage
+echo "Linking storage..."
+docker compose exec -T app php artisan storage:link
 
 # 5. Clear and optimize caches
 echo "Optimizing application cache..."
