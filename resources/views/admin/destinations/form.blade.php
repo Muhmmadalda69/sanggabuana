@@ -76,8 +76,47 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Urutan Tampil</label>
                             <input type="number" name="sort_order" value="{{ old('sort_order', $destination->sort_order ?? 0) }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-forest-500 focus:ring-forest-500 px-4 py-2 border">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Garis Lintang (Latitude)</label>
+                            <input type="text" name="latitude" value="{{ old('latitude', $destination->latitude) }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-forest-500 focus:ring-forest-500 px-4 py-2 border" placeholder="Contoh: -6.7275">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Garis Bujur (Longitude)</label>
+                            <input type="text" name="longitude" value="{{ old('longitude', $destination->longitude) }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-forest-500 focus:ring-forest-500 px-4 py-2 border" placeholder="Contoh: 107.0394">
+                        </div>
                     </div>
                 </div>
+
+                {{-- Konfigurasi Input Loket (POS) --}}
+                @if(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+                        <i data-lucide="sliders-horizontal" class="w-4 h-4 text-forest-600"></i>
+                        Konfigurasi Input Formulir Loket (POS)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" name="has_community" value="1" {{ old('has_community', $destination->has_community) ? 'checked' : '' }} class="w-5 h-5 mt-0.5 rounded text-forest-600 focus:ring-forest-500 border-gray-300">
+                                <div>
+                                    <div class="font-semibold text-gray-900 text-sm">Input Komunitas</div>
+                                    <div class="text-xs text-gray-500 mt-1">Aktifkan isian "Nama Komunitas (Opsional)" pada form loket destinasi ini.</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" name="has_purpose" value="1" {{ old('has_purpose', $destination->has_purpose) ? 'checked' : '' }} class="w-5 h-5 mt-0.5 rounded text-forest-600 focus:ring-forest-500 border-gray-300">
+                                <div>
+                                    <div class="font-semibold text-gray-900 text-sm">Tujuan Kunjungan</div>
+                                    <div class="text-xs text-gray-500 mt-1">Aktifkan dropdown "Tujuan Kunjungan" (Hiking, Trail Run, Ziarah).</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 {{-- Kontak --}}
                 <div>

@@ -11,17 +11,32 @@ class DestinationController extends Controller
 {
     public function index()
     {
+        if (auth()->user()->isKasir()) {
+            if (auth()->user()->destination_id) {
+                return redirect()->route('admin.destinations.edit', auth()->user()->destination_id);
+            }
+            return redirect()->route('admin.dashboard')->with('error', 'Anda belum ditugaskan ke destinasi mana pun.');
+        }
+
         $destinations = Destination::orderBy('sort_order')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.destinations.index', compact('destinations'));
     }
 
     public function create()
     {
+        if (auth()->user()->isKasir()) {
+            abort(403, 'Kasir tidak diperbolehkan membuat destinasi baru.');
+        }
+
         return view('admin.destinations.form', ['destination' => new Destination()]);
     }
 
     public function store(Request $request)
     {
+        if (auth()->user()->isKasir()) {
+            abort(403, 'Kasir tidak diperbolehkan membuat destinasi baru.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:500',
@@ -39,11 +54,17 @@ class DestinationController extends Controller
             'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer',
             'contacts' => 'nullable|array',
+            'has_community' => 'nullable|boolean',
+            'has_purpose' => 'nullable|boolean',
+            'has_gender_details' => 'nullable|boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['has_community'] = $request->boolean('has_community');
+        $validated['has_purpose'] = $request->boolean('has_purpose');
+        $validated['has_gender_details'] = $request->boolean('has_gender_details');
 
         // Filter out empty contacts
         $contacts = $request->input('contacts', []);
@@ -72,11 +93,19 @@ class DestinationController extends Controller
 
     public function edit(Destination $destination)
     {
+        if (auth()->user()->isKasir() && auth()->user()->destination_id !== $destination->id) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengedit destinasi ini.');
+        }
+
         return view('admin.destinations.form', compact('destination'));
     }
 
     public function update(Request $request, Destination $destination)
     {
+        if (auth()->user()->isKasir() && auth()->user()->destination_id !== $destination->id) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengedit destinasi ini.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:500',
@@ -94,11 +123,17 @@ class DestinationController extends Controller
             'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer',
             'contacts' => 'nullable|array',
+            'has_community' => 'nullable|boolean',
+            'has_purpose' => 'nullable|boolean',
+            'has_gender_details' => 'nullable|boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['has_community'] = $request->boolean('has_community');
+        $validated['has_purpose'] = $request->boolean('has_purpose');
+        $validated['has_gender_details'] = $request->boolean('has_gender_details');
 
         // Filter out empty contacts
         $contacts = $request->input('contacts', []);
@@ -125,12 +160,21 @@ class DestinationController extends Controller
 
         $destination->update($validated);
 
+        if (auth()->user()->isKasir()) {
+            return redirect()->route('admin.destinations.edit', $destination->id)
+                ->with('success', 'Informasi destinasi Anda berhasil diperbarui!');
+        }
+
         return redirect()->route('admin.destinations.index')
             ->with('success', 'Destinasi berhasil diperbarui!');
     }
 
     public function destroy(Destination $destination)
     {
+        if (auth()->user()->isKasir()) {
+            abort(403, 'Kasir tidak diperbolehkan menghapus destinasi.');
+        }
+
         if ($destination->image && file_exists(public_path('storage/' . $destination->image))) {
             unlink(public_path('storage/' . $destination->image));
         }

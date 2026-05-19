@@ -11,6 +11,7 @@ class Destination extends Model
         'name', 'slug', 'short_description', 'description', 'image',
         'location', 'altitude', 'operational_days', 'operational_hours', 'price', 'duration',
         'latitude', 'longitude', 'is_featured', 'is_active', 'sort_order', 'contacts',
+        'has_community', 'has_purpose', 'has_gender_details',
     ];
 
     protected $casts = [
@@ -20,6 +21,9 @@ class Destination extends Model
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'contacts' => 'array',
+        'has_community' => 'boolean',
+        'has_purpose' => 'boolean',
+        'has_gender_details' => 'boolean',
     ];
 
     protected static function booted(): void

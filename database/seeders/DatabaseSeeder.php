@@ -7,6 +7,8 @@ use App\Models\Gallery;
 use App\Models\Setting;
 use App\Models\Testimonial;
 use App\Models\Page;
+use App\Models\Visitor;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -108,7 +110,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($destinations as $dest) {
-            Destination::create($dest);
+            Destination::updateOrCreate(['slug' => $dest['slug']], $dest);
         }
 
         // Testimonials
@@ -148,7 +150,10 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($testimonials as $testimonial) {
-            Testimonial::create($testimonial);
+            Testimonial::updateOrCreate([
+                'name' => $testimonial['name'],
+                'role' => $testimonial['role']
+            ], $testimonial);
         }
 
         // Settings
@@ -172,24 +177,190 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            Setting::create($setting);
+            Setting::updateOrCreate(['key' => $setting['key']], $setting);
         }
 
         // Pages
-        Page::create([
+        Page::updateOrCreate([
+            'slug' => 'tentang-kami'
+        ], [
             'title' => 'Tentang Kami',
-            'slug' => 'tentang-kami',
             'content' => '<h2>Sejarah</h2><p>Gunung Sanggabuana telah menjadi tujuan wisata alam sejak lama. Kawasan ini dikelola secara profesional untuk menyediakan pengalaman alam terbaik bagi pengunjung dari seluruh Indonesia.</p><h2>Visi & Misi</h2><p>Menjadi destinasi wisata alam terdepan di Jawa Barat yang mengedepankan kelestarian alam dan pemberdayaan masyarakat lokal.</p>',
-            'meta_description' => 'Pelajari tentang sejarah dan visi misi Wisata Gunung Sanggabuana.',
+            'meta_description' => 'Pelajari tentang sejarah and visi misi Wisata Gunung Sanggabuana.',
             'is_active' => true,
         ]);
 
-        Page::create([
+        Page::updateOrCreate([
+            'slug' => 'syarat-ketentuan'
+        ], [
             'title' => 'Syarat & Ketentuan',
-            'slug' => 'syarat-ketentuan',
             'content' => '<h2>Peraturan Pengunjung</h2><ul><li>Dilarang membuang sampah sembarangan</li><li>Dilarang merusak tanaman dan satwa</li><li>Wajib mengikuti jalur pendakian yang telah ditentukan</li><li>Anak di bawah 12 tahun harus didampingi orang dewasa</li></ul>',
             'meta_description' => 'Syarat dan ketentuan pengunjung Wisata Gunung Sanggabuana.',
             'is_active' => true,
         ]);
+
+        // Seed Visitors Mock Data for Analytics & POS & Monitoring
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Visitor::truncate();
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        $sanggabuana = Destination::where('slug', 'gunung-sanggabuana')->first();
+        $cigentis = Destination::where('slug', 'curug-cigentis')->first();
+        $batukapur = Destination::where('slug', 'puncak-batu-kapur')->first();
+
+        $destinationsData = [];
+        if ($sanggabuana) {
+            $destinationsData[$sanggabuana->id] = ['name' => $sanggabuana->name, 'price' => $sanggabuana->price, 'slug' => $sanggabuana->slug];
+        }
+        if ($cigentis) {
+            $destinationsData[$cigentis->id] = ['name' => $cigentis->name, 'price' => $cigentis->price, 'slug' => $cigentis->slug];
+        }
+        if ($batukapur) {
+            $destinationsData[$batukapur->id] = ['name' => $batukapur->name, 'price' => $batukapur->price, 'slug' => $batukapur->slug];
+        }
+
+        // If none of those three exist, grab whatever destinations are in the database
+        if (empty($destinationsData)) {
+            $allDests = Destination::limit(3)->get();
+            foreach ($allDests as $d) {
+                $destinationsData[$d->id] = ['name' => $d->name, 'price' => $d->price, 'slug' => $d->slug];
+            }
+        }
+
+        $sanggabuanaId = $sanggabuana ? $sanggabuana->id : 1;
+
+        $names = [
+            'Rian Hidayat', 'Siti Aminah', 'Aditya Pratama', 'Dewi Lestari', 'Budi Utomo',
+            'Rizky Fauzi', 'Indah Permata', 'Agus Salim', 'Fitri Handayani', 'Hendra Wijaya',
+            'Yusuf Mansur', 'Lani Marlina', 'Anwar Sadat', 'Novianti', 'Eko Prasetyo',
+            'Taufik Hidayat', 'Rina Wulandari', 'Ahmad Dahlan', 'Slamet Riyadi', 'Kartini'
+        ];
+
+        $addresses = [
+            'Karawang', 'Bekasi', 'Jakarta', 'Bandung', 'Purwakarta', 'Subang', 'Cianjur', 'Bogor'
+        ];
+
+        $communities = [
+            'Sanggabuana Adventure', 'Karawang Trail Runners', 'KPA Tapak Rimba', 'Backpacker Jakarta',
+            'Pecinta Alam Karawang', null, null, null, null, null
+        ];
+
+        $purposes = ['Hiking', 'Trail Run', 'Jiarah'];
+        $paymentMethods = ['Tunai', 'QRIS', 'Transfer'];
+
+        $startDate = Carbon::create(2026, 1, 1);
+        $endDate = Carbon::now();
+        $daysDiff = $startDate->diffInDays($endDate);
+
+        for ($i = 0; $i < 180; $i++) {
+            // Pick a random destination from the available ones
+            $destId = array_rand($destinationsData);
+            $destInfo = $destinationsData[$destId];
+
+            // Pick a random date in the past 5 months
+            $randomDayOffset = rand(0, $daysDiff);
+            $checkedIn = (clone $startDate)->addDays($randomDayOffset)->setHour(rand(7, 16))->setMinute(rand(0, 59));
+            
+            // Randomize status and checked out time
+            $isToday = $checkedIn->isToday();
+            $status = 'out';
+            $checkedOut = null;
+            if ($isToday) {
+                $status = rand(0, 1) === 0 ? 'in' : 'out';
+            }
+            if ($status === 'out') {
+                $checkedOut = (clone $checkedIn)->addHours(rand(2, 8));
+            }
+
+            // Visitor demographics & group details
+            $name = $names[array_rand($names)];
+            
+            // Randomize address type
+            $typeRand = rand(0, 100);
+            if ($typeRand < 15) {
+                $addressType = 'lokal';
+                $province = 'Jawa Barat';
+                $city = rand(0, 1) === 0 ? 'Pangkalan' : 'Tegalwaru';
+            } elseif ($typeRand < 90) {
+                $addressType = 'indonesia';
+                $indoLocations = [
+                    ['province' => 'Jawa Barat', 'cities' => ['Karawang', 'Bekasi', 'Bandung', 'Purwakarta', 'Subang', 'Cianjur', 'Bogor']],
+                    ['province' => 'DKI Jakarta', 'cities' => ['Jakarta Timur', 'Jakarta Selatan', 'Jakarta Barat', 'Jakarta Pusat']],
+                    ['province' => 'Banten', 'cities' => ['Serang', 'Tangerang', 'Cilegon']],
+                    ['province' => 'Jawa Tengah', 'cities' => ['Semarang', 'Surakarta', 'Tegal']]
+                ];
+                $loc = $indoLocations[array_rand($indoLocations)];
+                $province = $loc['province'];
+                $city = $loc['cities'][array_rand($loc['cities'])];
+            } else {
+                $addressType = 'mancanegara';
+                $worldLocations = [
+                    ['country' => 'Germany', 'cities' => ['Berlin', 'Munich', 'Frankfurt']],
+                    ['country' => 'Australia', 'cities' => ['Sydney', 'Melbourne', 'Brisbane']],
+                    ['country' => 'United States', 'cities' => ['Los Angeles', 'New York', 'San Francisco']],
+                    ['country' => 'Singapore', 'cities' => ['Singapore']]
+                ];
+                $loc = $worldLocations[array_rand($worldLocations)];
+                $province = $loc['country'];
+                $city = $loc['cities'][array_rand($loc['cities'])];
+            }
+
+            $address = $city . ', ' . $province;
+            $community = ($destId === $sanggabuanaId) ? $communities[array_rand($communities)] : null;
+            $purpose = ($destId === $sanggabuanaId) ? $purposes[array_rand($purposes)] : 'Normal';
+            $campingDuration = ($purpose === 'Hiking') ? rand(1, 3) : null;
+
+            // Generate demographics quantities
+            $leaderGender = rand(0, 1) === 0 ? 'L' : 'P';
+            $qtyMale = rand(0, 5);
+            $qtyFemale = rand(0, 4);
+            $qtyKids = rand(0, 2);
+            
+            if ($leaderGender === 'L') {
+                $qtyMale += 1;
+            } else {
+                $qtyFemale += 1;
+            }
+            $qtyTotal = $qtyMale + $qtyFemale + $qtyKids;
+            
+            $avgAge = rand(18, 45);
+            $price = $destInfo['price'];
+            
+            // Group discount for larger groups
+            if ($qtyTotal > 5) {
+                $price = max($price - 5000, 5000);
+            }
+            $totalPrice = $price * $qtyTotal;
+            $paymentMethod = $paymentMethods[array_rand($paymentMethods)];
+
+            // Generate unique ticket number
+            $ticketNo = 'TKT-' . $checkedIn->format('Ymd') . '-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT);
+
+            Visitor::create([
+                'destination_id' => $destId,
+                'ticket_no' => $ticketNo,
+                'name' => $name,
+                'address' => $address,
+                'address_type' => $addressType,
+                'city' => $city,
+                'province' => $province,
+                'community' => $community,
+                'purpose' => $purpose,
+                'camping_duration' => $campingDuration,
+                'qty_male' => $qtyMale,
+                'qty_female' => $qtyFemale,
+                'qty_kids' => $qtyKids,
+                'qty_total' => $qtyTotal,
+                'avg_age' => $avgAge,
+                'price' => $price,
+                'total_price' => $totalPrice,
+                'payment_method' => $paymentMethod,
+                'status' => $status,
+                'checked_in_at' => $checkedIn,
+                'checked_out_at' => $checkedOut,
+                'created_at' => $checkedIn,
+                'updated_at' => $checkedIn
+            ]);
+        }
     }
 }

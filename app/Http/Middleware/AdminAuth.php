@@ -10,7 +10,8 @@ class AdminAuth
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!session('admin_authenticated')) {
+        if (!\Illuminate\Support\Facades\Auth::check()) {
+            session()->forget(['admin_authenticated', 'admin_name', 'admin_role', 'admin_destination_id']);
             return redirect()->route('admin.login')->with('error', 'Silakan login terlebih dahulu.');
         }
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\AdminAuth;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,13 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 Route::prefix('admin')->name('admin.')->middleware(AdminAuth::class)->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/notifications/unread-count', [DashboardController::class, 'unreadCount'])->name('notifications.unread');
+    Route::get('/dashboard/realtime-stats', [DashboardController::class, 'realtimeStats'])->name('dashboard.realtime-stats');
+
+    // POS & Monitoring routes for Cashiers
+    Route::get('/pos', [DashboardController::class, 'posIndex'])->name('pos.index');
+    Route::post('/pos', [DashboardController::class, 'posStore'])->name('pos.store');
+    Route::get('/monitoring', [DashboardController::class, 'monitoringIndex'])->name('monitoring.index');
+    Route::post('/monitoring/{visitor}/checkout', [DashboardController::class, 'monitoringCheckout'])->name('monitoring.checkout');
 
     Route::resource('destinations', DestinationController::class)->except(['show']);
     Route::resource('galleries', GalleryController::class)->except(['show']);
@@ -54,4 +62,9 @@ Route::prefix('admin')->name('admin.')->middleware(AdminAuth::class)->group(func
 
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+    // RBAC routes - only accessible by superadmin role
+    Route::middleware('superadmin')->group(function () {
+        Route::resource('users', UserController::class)->except(['show']);
+    });
 });

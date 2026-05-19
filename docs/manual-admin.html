@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Book Admin - Wisata Gunung Sanggabuana</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+            /* Light Theme Tokens */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-sidebar: #0f172a;
+            --sidebar-text: #94a3b8;
+            --sidebar-text-active: #ffffff;
+            --sidebar-item-hover: rgba(255, 255, 255, 0.06);
+            --sidebar-item-active: #15803d; /* Forest Green */
+            
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-inverse: #ffffff;
+            
+            --accent: #16a34a;
+            --accent-light: #dcfce7;
+            --accent-dark: #14532d;
+            
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+            
+            --code-bg: #f1f5f9;
+            --code-text: #0f172a;
+            --tip-bg: #eff6ff;
+            --tip-border: #3b82f6;
+            --warning-bg: #fffbeb;
+            --warning-border: #f59e0b;
+            --important-bg: #fef2f2;
+            --important-border: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Tokens */
+            --bg-primary: #090d16;
+            --bg-secondary: #111827;
+            --bg-sidebar: #0b0f19;
+            --sidebar-text: #6b7280;
+            --sidebar-text-active: #f3f4f6;
+            --sidebar-item-hover: rgba(255, 255, 255, 0.03);
+            --sidebar-item-active: #16a34a;
+            
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-inverse: #090d16;
+            
+            --accent: #22c55e;
+            --accent-light: #14532d;
+            --accent-dark: #4ade80;
+            
+            --border-color: #1f2937;
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+            --card-shadow-hover: 0 12px 20px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+            
+            --code-bg: #1f2937;
+            --code-text: #f9fafb;
+            --tip-bg: rgba(59, 130, 246, 0.1);
+            --tip-border: #3b82f6;
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --warning-border: #f59e0b;
+            --important-bg: rgba(239, 68, 68, 0.1);
+            --important-border: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* SIDEBAR STYLE */
+        aside {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            color: var(--sidebar-text);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-b: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
+        }
+
+        .sidebar-title {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.1rem;
+            line-height: 1.2;
+            color: white;
+        }
+
+        .sidebar-title span {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: #22c55e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .search-container {
+            padding: 16px 24px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #22c55e;
+            background-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 38px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            margin: 20px 8px 8px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item a:hover {
+            color: var(--sidebar-text-active);
+            background-color: var(--sidebar-item-hover);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active a {
+            color: var(--sidebar-text-active);
+            background-color: var(--sidebar-item-active);
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(21, 128, 61, 0.2);
+        }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* CONTENT CONTAINER */
+        main {
+            margin-left: 320px;
+            flex: 1;
+            padding: 48px;
+            max-width: 1000px;
+            transition: all 0.3s;
+        }
+
+        /* HEADER AND CONTROL SYSTEM */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 24px;
+        }
+
+        .doc-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle-btn {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* MOBILE HEADER */
+        .mobile-header {
+            display: none;
+            background-color: var(--bg-sidebar);
+            color: white;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        /* DOCUMENTATION TYPOGRAPHY & ELEMENTS */
+        .doc-section {
+            display: block;
+            margin-bottom: 60px;
+            padding-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .doc-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            border-left: 5px solid var(--accent);
+            padding-left: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h3 {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 24px 0 12px 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 40px 0;
+        }
+
+        /* CUSTOM BULLET POINTS & LISTS */
+        ul {
+            list-style: none;
+            padding-left: 4px;
+            margin-bottom: 24px;
+        }
+
+        ul li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        ul li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 1px;
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1rem;
+            width: 18px;
+            height: 18px;
+            background-color: var(--accent-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        /* TABLES */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 28px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+            background-color: var(--bg-secondary);
+        }
+
+        th {
+            background-color: rgba(21, 128, 61, 0.05);
+            font-weight: 600;
+            color: var(--text-main);
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--border-color);
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            vertical-align: top;
+            line-height: 1.5;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(22, 163, 74, 0.02);
+            color: var(--text-main);
+        }
+
+        /* CARD COMPONENT */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin: 28px 0;
+        }
+
+        .feature-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #22c55e, #15803d);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .card-text {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* ALERTS AND BLOCKS */
+        .alert {
+            padding: 20px 24px 20px 60px;
+            border-radius: 14px;
+            margin-bottom: 28px;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .alert svg {
+            position: absolute;
+            left: 20px;
+            top: 22px;
+            width: 24px;
+            height: 24px;
+        }
+
+        .alert-tip {
+            background-color: var(--tip-bg);
+            border-left: 5px solid var(--tip-border);
+            color: var(--text-main);
+        }
+
+        .alert-tip svg {
+            color: var(--tip-border);
+        }
+
+        .alert-warning {
+            background-color: var(--warning-bg);
+            border-left: 5px solid var(--warning-border);
+            color: var(--text-main);
+        }
+
+        .alert-warning svg {
+            color: var(--warning-border);
+        }
+
+        .alert-important {
+            background-color: var(--important-bg);
+            border-left: 5px solid var(--important-border);
+            color: var(--text-main);
+        }
+
+        .alert-important svg {
+            color: var(--important-border);
+        }
+
+        /* CODE BLOCK & INTERACTION */
+        .code-box {
+            position: relative;
+            background-color: var(--code-bg);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: Consolas, Monaco, "Andale Mono", monospace;
+            font-size: 0.9rem;
+            color: var(--code-text);
+            margin-bottom: 28px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-family: var(--font-body);
+            font-weight: 500;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            background-color: var(--bg-secondary);
+        }
+
+        .code-content {
+            white-space: pre;
+            line-height: 1.6;
+        }
+
+        /* SPECIAL BADGES */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-green {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        [data-theme="dark"] .badge-green {
+            background-color: rgba(22, 163, 74, 0.2);
+            color: #4ade80;
+        }
+
+        .badge-red {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        [data-theme="dark"] .badge-red {
+            background-color: rgba(220, 38, 38, 0.2);
+            color: #f87171;
+        }
+
+        .badge-amber {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        [data-theme="dark"] .badge-amber {
+            background-color: rgba(217, 119, 6, 0.2);
+            color: #fbbf24;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #22c55e;
+            display: inline-block;
+            position: relative;
+        }
+
+        .pulse-dot::after {
+            content: "";
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #22c55e;
+            position: absolute;
+            left: 0;
+            top: 0;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        /* SCREENSHOT PLACEHOLDER */
+        .visual-mockup {
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow-hover);
+            margin: 32px 0;
+            overflow: hidden;
+        }
+
+        .mockup-header {
+            background-color: var(--bg-primary);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mockup-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .mockup-dot.red { background-color: #ef4444; }
+        .mockup-dot.yellow { background-color: #f59e0b; }
+        .mockup-dot.green { background-color: #10b981; }
+
+        .mockup-body {
+            padding: 24px;
+            font-family: var(--font-body);
+        }
+
+        .mockup-dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .mockup-stat-box {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .mockup-stat-val {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 4px;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1024px) {
+            aside {
+                left: -320px;
+            }
+            
+            aside.open {
+                left: 0;
+            }
+
+            main {
+                margin-left: 0;
+                padding: 30px 20px;
+            }
+
+            .top-bar {
+                display: none;
+            }
+
+            .mobile-header {
+                display: flex;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+
+            .mockup-dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .mockup-dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MOBILE HEADER -->
+    <div class="mobile-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="sidebar-logo-icon" style="width: 32px; height: 32px; border-radius: 8px;">
+                <i data-lucide="map" style="width: 18px; height: 18px;"></i>
+            </div>
+            <div class="sidebar-title" style="font-size: 0.95rem;">
+                Sanggabuana <span>Admin Docs</span>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <button class="theme-toggle-btn" id="theme-toggle-mobile" style="width: 32px; height: 32px; border-radius: 8px;">
+                <i data-lucide="moon" style="width: 16px; height: 16px;"></i>
+            </button>
+            <button class="mobile-menu-btn" id="sidebar-open-btn">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon">
+                <i data-lucide="compass" class="w-6 h-6"></i>
+            </div>
+            <div class="sidebar-title">
+                Sanggabuana
+                <span>Admin Portal V1.0</span>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="doc-search" class="search-input" placeholder="Cari topik panduan...">
+            <i data-lucide="search" class="search-icon"></i>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-label">PENDAHULUAN</div>
+            <ul class="nav-list">
+                <li class="nav-item active" data-target="pendahuluan"><a href="#pendahuluan"><i data-lucide="book-open" class="w-4 h-4"></i> Pengantar</a></li>
+                <li class="nav-item" data-target="akses"><a href="#akses"><i data-lucide="key-round" class="w-4 h-4"></i> Akses &amp; Login</a></li>
+            </ul>
+
+            <div class="nav-label">PANDUAN MODUL</div>
+            <ul class="nav-list">
+                <li class="nav-item" data-target="dashboard"><a href="#dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dasbor Utama</a></li>
+                <li class="nav-item" data-target="destinasi"><a href="#destinasi"><i data-lucide="mountain" class="w-4 h-4"></i> Destinasi Wisata</a></li>
+                <li class="nav-item" data-target="galeri"><a href="#galeri"><i data-lucide="image" class="w-4 h-4"></i> Galeri Foto</a></li>
+                <li class="nav-item" data-target="testimoni"><a href="#testimoni"><i data-lucide="message-square" class="w-4 h-4"></i> Testimoni Ulasan</a></li>
+                <li class="nav-item" data-target="halaman"><a href="#halaman"><i data-lucide="file-text" class="w-4 h-4"></i> Halaman Statis</a></li>
+                <li class="nav-item" data-target="kontak"><a href="#kontak"><i data-lucide="mail" class="w-4 h-4"></i> Pesan Masuk</a></li>
+            </ul>
+
+            <div class="nav-label">PENGATURAN</div>
+            <ul class="nav-list">
+                <li class="nav-item" data-target="pengaturan"><a href="#pengaturan"><i data-lucide="settings" class="w-4 h-4"></i> Pengaturan Global</a></li>
+                <li class="nav-item" data-target="cuaca"><a href="#cuaca"><i data-lucide="cloud-lightning" class="w-4 h-4"></i> Siaga Cuaca (Jalur)</a></li>
+            </ul>
+
+            <div class="nav-label">KEAMANAN &amp; RBAC</div>
+            <ul class="nav-list">
+                <li class="nav-item" data-target="rbac"><a href="#rbac"><i data-lucide="users" class="w-4 h-4"></i> Manajemen Role &amp; Kasir</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span>&copy; 2026 Sanggabuana</span>
+            <span style="display:flex; align-items:center; gap:4px;"><span class="pulse-dot"></span> Online</span>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- TOP BAR (Desktop only) -->
+        <div class="top-bar">
+            <div class="doc-meta">
+                <i data-lucide="info" class="w-4 h-4 text-forest-600"></i>
+                <span>Manual Book ini disusun untuk kebutuhan pengelolaan administrator internal.</span>
+            </div>
+            <div class="controls">
+                <button class="theme-toggle-btn" id="theme-toggle-btn" title="Ganti Tema">
+                    <i data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SECTION 1: PENDAHULUAN -->
+        <section id="pendahuluan" class="doc-section active-section">
+            <h1>🗺️ Manual Book Admin</h1>
+            <div class="doc-subtitle">Selamat datang di Pusat Panduan Administrator Website Wisata Gunung Sanggabuana. Dokumen ini dirancang khusus dengan langkah ringkas, modern, dan mudah dipahami agar Anda dapat menguasai pengelolaan website dengan cepat.</div>
+            
+            <h2>Pengenalan Portal</h2>
+            <p>Portal Administrator Wisata Gunung Sanggabuana adalah panel kontrol untuk memperbarui informasi seputar pariwisata alam. Mulai dari memperbarui rincian keunikan jalur pendakian, mengunggah foto galeri keindahan alam, menyeleksi ulasan, hingga merilis status siaga cuaca darurat demi keselamatan pengunjung.</p>
+
+            <div class="stat-grid">
+                <div class="feature-card">
+                    <div class="card-icon"><i data-lucide="heart" class="w-6 h-6"></i></div>
+                    <div class="card-title">Mudah Digunakan</div>
+                    <div class="card-text">Formulir isian didesain ramah pengguna dan dilengkapi pengolah teks visual modern.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><i data-lucide="shield-check" class="w-6 h-6"></i></div>
+                    <div class="card-title">Aman &amp; Andal</div>
+                    <div class="card-text">Dilengkapi proteksi sesi administrator untuk memastikan keamanan data portal.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><i data-lucide="zap" class="w-6 h-6"></i></div>
+                    <div class="card-title">Instan &amp; Responsif</div>
+                    <div class="card-text">Setiap perubahan konten yang Anda lakukan akan langsung tersaji real-time kepada pengunjung.</div>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 2: AKSES -->
+        <section id="akses" class="doc-section">
+            <h2>🔐 Akses &amp; Autentikasi</h2>
+            <p>Sebelum mengelola website, Anda wajib melakukan otentikasi login melalui formulir khusus yang aman.</p>
+            
+            <h3>🌐 URL Login Admin</h3>
+            <p>Buka peramban (browser) Anda, lalu navigasikan ke halaman berikut:</p>
+            <div class="code-box">
+                <div class="code-header">
+                    <span>URL LINK</span>
+                </div>
+                <div class="code-content">http://nama-domain-website.com/admin/login</div>
+            </div>
+
+            <h3>🔑 Kredensial Masuk Utama</h3>
+            <p>Gunakan data akses default berikut untuk masuk ke dashboard admin:</p>
+            
+            <div class="code-box">
+                <div class="code-header">
+                    <span>ADMIN DEFAULT CREDENTIALS</span>
+                    <button class="copy-btn" onclick="copyCredentials()"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Kredensial</button>
+                </div>
+                <div class="code-content" id="cred-text">Email    : admin@sanggabuana.com&#10;Password : admin123</div>
+            </div>
+
+            <div class="alert alert-important">
+                <i data-lucide="alert-octagon"></i>
+                <strong>Pemberitahuan Keamanan:</strong> Harap jaga kerahasiaan data email dan password di atas. Lakukan perubahan kredensial secara berkala jika pengelola sistem sudah memasang modul ganti sandi demi keamanan.
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 3: DASHBOARD -->
+        <section id="dashboard" class="doc-section">
+            <h2>📊 Dasbor Utama (Dashboard)</h2>
+            <p>Setelah login sukses, Anda disambut oleh halaman ringkasan kerja. Dasbor ini didesain agar Anda dapat memantau produktivitas website sekilas pandang.</p>
+
+            <div class="visual-mockup">
+                <div class="mockup-header">
+                    <span class="mockup-dot red"></span>
+                    <span class="mockup-dot yellow"></span>
+                    <span class="mockup-dot green"></span>
+                    <span style="margin-left: 10px; font-size: 0.75rem; color: var(--text-muted);">Sanggabuana Admin Dashboard</span>
+                </div>
+                <div class="mockup-body">
+                    <div class="mockup-dashboard">
+                        <div class="mockup-stat-box">
+                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">DESTINASI</span>
+                            <div class="mockup-stat-val">6</div>
+                        </div>
+                        <div class="mockup-stat-box">
+                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">GALERI</span>
+                            <div class="mockup-stat-val">12</div>
+                        </div>
+                        <div class="mockup-stat-box">
+                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">PESAN</span>
+                            <div class="mockup-stat-val">5</div>
+                        </div>
+                        <div class="mockup-stat-box" style="background-color: var(--accent-light);">
+                            <span style="font-size: 0.75rem; font-weight:600; color: var(--accent-dark);">STATUS WEB</span>
+                            <div class="mockup-stat-val" style="color: var(--accent-dark); font-size: 1.2rem; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:8px;">
+                                <span class="pulse-dot"></span> ONLINE
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>📊 Komponen Dasbor</h3>
+            <ul>
+                <li><strong>Kartu Statistik Cepat:</strong> Menampilkan total destinasi, foto galeri, testimoni, dan akumulasi pesan masuk real-time.</li>
+                <li><strong>Status Situs Web:</strong> Kotak bergradasi hijau yang menandakan situs sedang aktif di internet, dilengkapi tombol pintas menuju halaman frontend.</li>
+                <li><strong>Aktivitas Terbaru:</strong> Dua tabel di bagian bawah dasbor yang memuat 5 pesan masuk terbaru serta 5 destinasi yang baru saja dibuat atau dimodifikasi oleh admin.</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 4: DESTINASI -->
+        <section id="destinasi" class="doc-section">
+            <h2>🏔️ Pengelolaan Destinasi Wisata</h2>
+            <p>Fitur ini merupakan jantung utama sistem, berguna untuk menampilkan ragam lokasi wisata alam yang memukau di kawasan Gunung Sanggabuana.</p>
+
+            <h3>📝 Parameter Form Pengisian Destinasi</h3>
+            <p>Saat menekan tombol <strong>Tambah Destinasi</strong>, Anda akan disajikan formulir lengkap dengan parameter berikut:</p>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama Kolom</th>
+                            <th>Panduan Pengisian &amp; Validasi</th>
+                            <th>Contoh Konten</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Nama Destinasi</strong></td>
+                            <td>Teks judul destinasi wajib diisi. Sistem otomatis membuat slug URL ramah SEO.</td>
+                            <td><code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Curug Cigentis</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Deskripsi Pendek</strong></td>
+                            <td>Teks ringkasan daya tarik utama. Maksimal 500 karakter untuk keindahan tata letak beranda.</td>
+                            <td>Air terjun megah setinggi 50 meter tersembunyi di jantung hutan Sanggabuana yang perawan.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Deskripsi Lengkap</strong></td>
+                            <td>Teks editorial lengkap. Disediakan editor teks WYSIWYG untuk menyusun paragraf dan gaya tulisan.</td>
+                            <td>Paragraf seputar sejarah, keistimewaan, rute trekking, dan detail daya tarik objek wisata.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Foto Utama</strong></td>
+                            <td>Foto beresolusi tajam berformat JPG, PNG, atau WebP. Batas ukuran berkas maksimal <strong>5 MB</strong>.</td>
+                            <td>curug_cigentis_view.jpg</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Metadata Tambahan</strong></td>
+                            <td>Isi informasi detail pendukung seperti Ketinggian (Mdpl), Harga Tiket (Angka saja), Hari &amp; Jam Buka, Koordinat Google Maps.</td>
+                            <td>Altitude: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">800 mdpl</code>, Price: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">15000</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Urutan &amp; Publikasi</strong></td>
+                            <td>Input angka urutan tampil dan centang box Aktif/Featured untuk menayangkan langsung destinasi tersebut.</td>
+                            <td>Urutan: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">1</code> (Artinya tampil di urutan teratas)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Kontak Pengelola Wisata</strong></td>
+                            <td>Tambahkan baris kontak pengelola khusus per destinasi seperti nomor WhatsApp atau link Instagram secara dinamis.</td>
+                            <td>Platform: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">WhatsApp</code>, Value: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">08123456789</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-tip">
+                <i data-lucide="check-circle2"></i>
+                <strong>Tips Sukses:</strong> Gunakan foto utama dengan landscape rasio (16:9) agar tampilan detail destinasi di mata pengunjung tampak maksimal dan elegan.
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 5: GALERI -->
+        <section id="galeri" class="doc-section">
+            <h2>📸 Pengelolaan Galeri Foto</h2>
+            <p>Galeri berguna mengarsipkan rekaman keindahan panorama alam Sanggabuana dalam format visual grid yang rapi.</p>
+
+            <h3>➕ Langkah Membuat Galeri Foto Baru</h3>
+            <ul>
+                <li>Navigasikan ke menu <strong>Galeri</strong> di sidebar kiri, lalu klik tombol <strong>Tambah Galeri</strong>.</li>
+                <li><strong>Destinasi Terkait:</strong> Hubungkan foto dengan salah satu objek wisata pendukung. Jika merupakan foto umum pegunungan, Anda dapat mengosongkannya.</li>
+                <li><strong>Judul &amp; Caption Foto:</strong> Berikan judul yang informatif serta caption singkat agar memperkuat aspek visual foto di halaman pengunjung.</li>
+                <li><strong>Berkas Foto:</strong> Pilih foto terbaik Anda. Sistem membatasi kapasitas berkas maksimal <strong>5 MB</strong> untuk memastikan loading website tetap super cepat.</li>
+                <li>Atur prioritas nomor urutan tampil serta centang status <strong>Aktif</strong> sebelum menekan tombol <strong>Simpan</strong>.</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 6: TESTIMONI -->
+        <section id="testimoni" class="doc-section">
+            <h2>💬 Pengelolaan Testimoni &amp; Ulasan</h2>
+            <p>Komentar dan ulasan dari petualang sangat berharga dalam meningkatkan citra kawasan wisata Sanggabuana.</p>
+
+            <div class="alert alert-tip">
+                <i data-lucide="thumbs-up"></i>
+                <strong>Persetujuan Cepat (Instant Toggle):</strong> Anda tidak perlu membuka form edit untuk mempublikasikan ulasan. Cukup klik tombol toggle berstatus <span class="badge badge-green">Aktif</span> atau <span class="badge badge-amber">Draft</span> pada tabel utama, maka status ulasan di beranda depan langsung berganti detik itu juga!
+            </div>
+
+            <h3>📝 Parameter Ulasan</h3>
+            <p>Admin juga dapat menerbitkan ulasan manual (misalnya hasil wawancara pengunjung atau ulasan tokoh nasional):</p>
+            <ul>
+                <li><strong>Nama Tokoh / Pengunjung:</strong> Nama lengkap pemberi testimoni.</li>
+                <li><strong>Peran (Role):</strong> Profesi atau gelar, contoh: *Pendaki Profesional*, *Travel Blogger*, *Keluarga Wisatawan*.</li>
+                <li><strong>Penilaian Rating:</strong> Skala nilai bintang 1 sampai 5 bintang.</li>
+                <li><strong>Foto Profil / Avatar:</strong> Wajah pemberi ulasan (Maksimal berkas <strong>2 MB</strong>).</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 7: HALAMAN -->
+        <section id="halaman" class="doc-section">
+            <h2>📄 Pengelolaan Halaman Informasi</h2>
+            <p>Halaman Informasi digunakan untuk menulis dokumen hukum atau profil umum seperti halaman *Tentang Kami*, *Syarat &amp; Ketentuan*, dan *Panduan Pendakian Aman*.</p>
+
+            <h3>🛠️ Keunggulan Fitur Halaman</h3>
+            <ul>
+                <li><strong>Visual Editor (WYSIWYG):</strong> Anda bebas berkreasi merancang struktur tulisan menggunakan tebal, miring, list balet, hingga menyisipkan link artikel eksternal.</li>
+                <li><strong>Otomatisasi Slug:</strong> Tulis judul halaman Anda, sistem akan merapikan link URL halaman tersebut secara otomatis agar ramah mesin pencarian Google (misal judul <em>"Syarat & Ketentuan"</em> berubah menjadi link akhir <em>"halaman/syarat-ketentuan"</em>).</li>
+                <li><strong>SEO Meta Deskripsi:</strong> Sediakan rangkuman halaman 1-2 kalimat agar situs Anda mendapat posisi strategis pada pencarian Google.</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 8: KONTAK -->
+        <section id="kontak" class="doc-section">
+            <h2>✉️ Manajemen Pesan Masuk (Kontak)</h2>
+            <p>Saluran komunikasi utama pengunjung ke meja kerja admin untuk pertanyaan, kritik, atau kerja sama bisnis.</p>
+
+            <h3>📥 Prosedur Pengelolaan Pesan</h3>
+            <ul>
+                <li><strong>Indikator Notifikasi:</strong> Ikon pesan pada dashboard menyala dengan tanda merah jika terdapat pesan baru.</li>
+                <li><strong>Baca Detil Pesan:</strong> Klik baris pesan pada tabel kontak. Sistem otomatis menampilkan isi pesan lengkap dan langsung mengubah status pesan menjadi <span class="badge badge-green">Sudah Dibaca</span> secara cerdas.</li>
+                <li><strong>Penghapusan Berkas:</strong> Untuk menjaga kerapihan penyimpanan database, Anda dapat membuang pesan bernada spam dengan menekan ikon tong sampah merah pada daftar aksi.</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 9: PENGATURAN -->
+        <section id="pengaturan" class="doc-section">
+            <h2>⚙️ Pengaturan Global (Settings)</h2>
+            <p>Pusat kendali operasional website untuk memperbarui identitas branding, visual landing page, dan tautan sosial media resmi.</p>
+
+            <div class="stat-grid">
+                <div class="feature-card">
+                    <div class="card-icon" style="background-color:#fee2e2; color:#ef4444;"><i data-lucide="globe" class="w-6 h-6"></i></div>
+                    <div class="card-title">Umum &amp; Sosmed</div>
+                    <div class="card-text">Ubah nama web, deskripsi footer, alamat email pengelola, dan tautan resmi Instagram/YouTube.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon" style="background-color:#fef3c7; color:#d97706;"><i data-lucide="monitor" class="w-6 h-6"></i></div>
+                    <div class="card-title">Visual Hero Banner</div>
+                    <div class="card-text">Sesuaikan judul sambutan halaman beranda, sub-judul, serta ganti gambar latar belakang utama secara mandiri.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon" style="background-color:#dcfce7; color:#16a34a;"><i data-lucide="video" class="w-6 h-6"></i></div>
+                    <div class="card-title">Video Profil &amp; Fitur</div>
+                    <div class="card-text">Unggah langsung video profil berdurasi singkat atau sisipkan link video YouTube beserta susunan kartu kelebihan pariwisata.</div>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 10: CUACA -->
+        <section id="cuaca" class="doc-section">
+            <h2>☁️ Kondisi Jalur &amp; Siaga Cuaca</h2>
+            <p>Fitur krusial bagi pariwisata alam pegunungan untuk menjaga keselamatan petualang dari bahaya cuaca buruk di wilayah Sanggabuana.</p>
+
+            <div class="alert alert-warning">
+                <i data-lucide="alert-triangle"></i>
+                <strong>Status Darurat:</strong> Gunakan <strong>Mode Manual</strong> jika terjadi badai, longsor, pohon tumbang, atau penutupan berkala jalur pendakian agar pengunjung mendapat peringatan yang mencolok di beranda depan.
+            </div>
+
+            <h3>🔄 Pilihan Mode Siaga Cuaca</h3>
+            
+            <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px;">
+                    <div style="display:flex; align-items:center; gap:8px; font-weight:700; color: var(--accent); margin-bottom:10px;">
+                        <i data-lucide="refresh-cw" class="w-5 h-5 animate-spin" style="animation-duration: 4s;"></i> MODE OTOMATIS (AUTO)
+                    </div>
+                    <p style="font-size:0.85rem; margin:0;">Sistem memonitor cuaca dari server BMKG/Weather API berdasarkan koordinat <strong>Latitude &amp; Longitude</strong> yang diinput. Sangat praktis untuk kondisi normal sehari-hari.</p>
+                </div>
+                <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px;">
+                    <div style="display:flex; align-items:center; gap:8px; font-weight:700; color: #ef4444; margin-bottom:10px;">
+                        <i data-lucide="bell" class="w-5 h-5"></i> MODE MANUAL (DARURAT)
+                    </div>
+                    <p style="font-size:0.85rem; margin:0;">Admin mengabaikan pembacaan otomatis dan memasang status siaga buatan secara mandiri. Sangat efektif memblokir akses sementara karena force majeure.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px;">✍️ Formulir Siaga Manual</h3>
+            <ul>
+                <li><strong>Status Manual / Darurat:</strong> Judul pesan peringatan singkat, misal: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Jalur Pendakian Ditutup sementara</code></li>
+                <li><strong>Deskripsi Kondisi:</strong> Detail info penyebab penutupan, misal: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Penutupan jalur dari Pos 2 akibat hujan badai ekstrem dan risiko pohon tumbang</code></li>
+                <li><strong>Ikon Status:</strong> Pilih ikon penunjang visual darurat, seperti ikon segitiga peringatan (<code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">alert-triangle</code>).</li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- SECTION 11: RBAC -->
+        <section id="rbac" class="doc-section">
+            <h2>👥 Role-Based Access Control (RBAC) &amp; Manajemen Kasir</h2>
+            <p>Sistem pariwisata Gunung Sanggabuana kini dilengkapi dengan fitur keamanan <strong>Role-Based Access Control (RBAC)</strong> yang membagi wewenang admin ke dalam 3 tingkatan peran (role) yang berbeda demi menjaga integritas data masing-masing destinasi wisata.</p>
+
+            <h3>🎭 Tingkatan Peran &amp; Wewenang</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Peran (Role)</th>
+                            <th>Hak Akses Utama</th>
+                            <th>Batasan Akses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Superadmin</strong></td>
+                            <td>Seluruh fitur sistem + Kelola Pengguna &amp; Peran (RBAC)</td>
+                            <td>Tidak ada batasan akses.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Admin</strong></td>
+                            <td>Mengelola seluruh Konten Wisata, Interaksi, Halaman, dan Pengaturan</td>
+                            <td>Tidak dapat mengelola user/peran baru (Menu Kelola Pengguna disembunyikan).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Kasir</strong></td>
+                            <td>Mengakses loket POS (Point of Sales) tiket destinasi tugasnya &amp; mengedit destinasi tugasnya saja</td>
+                            <td>Hanya dapat mengakses Dashboard Kasir dan mengedit destinasi tugasnya. Tidak dapat mengakses Galeri, Halaman, Pesan, Pengaturan, atau membuat/menghapus destinasi.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>🔑 Kredensial Default Peran Baru</h3>
+            <p>Sistem secara otomatis menyediakan kredensial bawaan berikut di database untuk kemudahan uji coba:</p>
+            <ul>
+                <li><strong>Super Administrator:</strong> Email <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">superadmin@sanggabuana.com</code> / Password <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">superadmin123</code> (Role: Superadmin)</li>
+                <li><strong>Administrator:</strong> Email <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">admin@sanggabuana.com</code> / Password <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">admin123</code> (Role: Admin)</li>
+                <li><strong>Kasir Destinasi:</strong> Email <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">kasir.[slug]@sanggabuana.com</code> (contoh: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">kasir.gunung-sanggabuana@sanggabuana.com</code>) / Password <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">kasir123</code> (Role: Kasir)</li>
+            </ul>
+
+            <h3>🖥️ Fitur Khusus Kasir &amp; POS Simulator</h3>
+            <p>Saat login sebagai kasir, antarmuka akan disesuaikan secara dinamis:</p>
+            <ul>
+                <li><strong>Dasbor Loket POS:</strong> Modul kasir terintegrasi untuk memasukkan jumlah tiket dan metode pembayaran, dilengkapi dengan kalkulator harga instan.</li>
+                <li><strong>Cetak Receipt &amp; QR Code:</strong> Visualisasi struk transaksi dan scan check-in QR Code secara visual interaktif.</li>
+                <li><strong>Log Transaksi Penjualan:</strong> Rekapitulasi daftar transaksi harian untuk memudahkan pelaporan.</li>
+                <li><strong>Destinasi Saya:</strong> Menu akses cepat untuk memperbarui rincian operasional dan status cuaca destinasi wisata di bawah tanggung jawab kasir secara aman.</li>
+            </ul>
+        </section>
+
+        <hr>
+        
+        <p style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 60px;">
+            Dibuat dengan dedikasi tinggi &bull; Wisata Gunung Sanggabuana Admin Manual Book &bull; Dirancang untuk Efisiensi Kerja.
+        </p>
+    </main>
+
+    <script>
+        // THEME MANAGEMENT
+        const body = document.body;
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+
+        // Check user preferences or localstorage
+        const savedTheme = localStorage.getItem('admin-doc-theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        updateThemeIcons(savedTheme);
+
+        function updateThemeIcons(theme) {
+            const iconName = theme === 'dark' ? 'sun' : 'moon';
+            
+            // Update desktop icon
+            themeToggleBtn.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5"></i>`;
+            // Update mobile icon
+            themeToggleMobile.innerHTML = `<i data-lucide="${iconName}" class="w-4 h-4"></i>`;
+            
+            lucide.createIcons();
+        }
+
+        function toggleTheme() {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('admin-doc-theme', newTheme);
+            updateThemeIcons(newTheme);
+        }
+
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        themeToggleMobile.addEventListener('click', toggleTheme);
+
+
+        // SIDEBAR NAVIGATION SEARCH & FILTER
+        const searchInput = document.getElementById('doc-search');
+        const navItems = document.querySelectorAll('.nav-item');
+        const docSections = document.querySelectorAll('.doc-section');
+
+        // Dynamic Active Highlight on Scroll / Click
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Remove active classes
+                navItems.forEach(i => i.classList.remove('active'));
+                docSections.forEach(s => s.classList.remove('active-section'));
+
+                // Add active
+                this.classList.add('active');
+                const targetId = this.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active-section');
+                
+                // On mobile, close sidebar on click
+                if (window.innerWidth <= 1024) {
+                    document.getElementById('sidebar').classList.remove('open');
+                }
+            });
+        });
+
+        // Search Filter
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+
+            navItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const targetId = item.getAttribute('data-target');
+                const section = document.getElementById(targetId);
+                const sectionContent = section.innerText.toLowerCase();
+
+                if (text.includes(query) || sectionContent.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Mobile Menu Toggling
+        const sidebarOpenBtn = document.getElementById('sidebar-open-btn');
+        const sidebar = document.getElementById('sidebar');
+
+        sidebarOpenBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Close sidebar if click outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 1024) {
+                if (!sidebar.contains(e.target) && !sidebarOpenBtn.contains(e.target) && !e.target.closest('.mobile-header')) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+
+        // COPY CREDENTIALS FUNCTION
+        function copyCredentials() {
+            const textToCopy = `Email: admin@sanggabuana.com\nPassword: admin123`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalHtml = copyBtn.innerHTML;
+                copyBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Berhasil!`;
+                copyBtn.style.borderColor = '#22c55e';
+                copyBtn.style.color = '#22c55e';
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHtml;
+                    copyBtn.style.borderColor = '';
+                    copyBtn.style.color = '';
+                    lucide.createIcons();
+                }, 2000);
+            }).catch(err => {
+                console.error('Gagal menyalin text: ', err);
+            });
+        }
+
+        // Initialize Lucide Icons on Load
+        lucide.createIcons();
+    </script>
+</body>
+</html>

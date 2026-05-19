@@ -10,9 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- FontAwesome 6 Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- TomSelect -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
@@ -32,65 +38,95 @@
             </div>
             
             <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                <a href="{{ route('admin.dashboard') }}" class="admin-sidebar-link flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
-                    </div>
-                    <span id="dashboard-badge-container">
-                        @php 
-                            $totalUnread = App\Models\Contact::unread()->count() + App\Models\Testimonial::where('is_read', false)->count(); 
-                        @endphp
-                        @if($totalUnread > 0)
-                            <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
-                        @endif
-                    </span>
-                </a>
-                
-                <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Konten Wisata</div>
-                
-                <a href="{{ route('admin.destinations.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.destinations.*') ? 'active' : '' }}">
-                    <i data-lucide="map" class="w-5 h-5"></i> Destinasi
-                </a>
-                
-                <a href="{{ route('admin.galleries.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.galleries.*') ? 'active' : '' }}">
-                    <i data-lucide="image" class="w-5 h-5"></i> Galeri
-                </a>
-                
-                <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Interaksi</div>
-                
-                <a href="{{ route('admin.contacts.index') }}" class="admin-sidebar-link flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.contacts.*') ? 'active' : '' }}">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="mail" class="w-5 h-5"></i> Pesan
-                    </div>
-                    <span id="contacts-badge-container">
-                        @php $unread = App\Models\Contact::unread()->count(); @endphp
-                        @if($unread > 0)
-                            <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $unread }}</span>
-                        @endif
-                    </span>
-                </a>
-                
-                <a href="{{ route('admin.testimonials.index') }}" class="admin-sidebar-link flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="message-square" class="w-5 h-5"></i> Testimoni
-                    </div>
-                    <span id="testimonials-badge-container">
-                        @php $unreadTesti = App\Models\Testimonial::where('is_read', false)->count(); @endphp
-                        @if($unreadTesti > 0)
-                            <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $unreadTesti }}</span>
-                        @endif
-                    </span>
-                </a>
-                
-                <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sistem</div>
-                
-                <a href="{{ route('admin.pages.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
-                    <i data-lucide="file-text" class="w-5 h-5"></i> Halaman CMS
-                </a>
-                
-                <a href="{{ route('admin.settings.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                    <i data-lucide="settings" class="w-5 h-5"></i> Pengaturan
-                </a>
+                @if(Auth::user()->isKasir())
+                    {{-- Kasir Sidebar Navigation --}}
+                    <div class="pt-2 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kasir Panel</div>
+                    
+                    <a href="{{ route('admin.dashboard') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Data Statistik
+                    </a>
+
+                    <a href="{{ route('admin.pos.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.pos.index') ? 'active' : '' }}">
+                        <i data-lucide="ticket" class="w-5 h-5"></i> POS Tiket
+                    </a>
+
+                    <a href="{{ route('admin.monitoring.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.monitoring.index') ? 'active' : '' }}">
+                        <i data-lucide="users" class="w-5 h-5"></i> Monitoring Pengunjung
+                    </a>
+                    
+                    @if(Auth::user()->destination_id)
+                        <a href="{{ route('admin.destinations.edit', Auth::user()->destination_id) }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.destinations.edit') ? 'active' : '' }}">
+                            <i data-lucide="mountain" class="w-5 h-5"></i> Destinasi Saya
+                        </a>
+                    @endif
+                @else
+                    {{-- Superadmin & Admin Sidebar Navigation --}}
+                    <a href="{{ route('admin.dashboard') }}" class="admin-sidebar-link flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+                        </div>
+                        <span id="dashboard-badge-container">
+                            @php 
+                                $totalUnread = App\Models\Contact::unread()->count() + App\Models\Testimonial::where('is_read', false)->count(); 
+                            @endphp
+                            @if($totalUnread > 0)
+                                <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
+                            @endif
+                        </span>
+                    </a>
+                    
+                    <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Konten Wisata</div>
+                    
+                    <a href="{{ route('admin.destinations.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.destinations.*') ? 'active' : '' }}">
+                        <i data-lucide="map" class="w-5 h-5"></i> Destinasi
+                    </a>
+                    
+                    <a href="{{ route('admin.galleries.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.galleries.*') ? 'active' : '' }}">
+                        <i data-lucide="image" class="w-5 h-5"></i> Galeri
+                    </a>
+                    
+                    <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Interaksi</div>
+                    
+                    <a href="{{ route('admin.contacts.index') }}" class="admin-sidebar-link flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.contacts.*') ? 'active' : '' }}">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="mail" class="w-5 h-5"></i> Pesan
+                        </div>
+                        <span id="contacts-badge-container">
+                            @php $unread = App\Models\Contact::unread()->count(); @endphp
+                            @if($unread > 0)
+                                <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $unread }}</span>
+                            @endif
+                        </span>
+                    </a>
+                    
+                    <a href="{{ route('admin.testimonials.index') }}" class="admin-sidebar-link flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="message-square" class="w-5 h-5"></i> Testimoni
+                        </div>
+                        <span id="testimonials-badge-container">
+                            @php $unreadTesti = App\Models\Testimonial::where('is_read', false)->count(); @endphp
+                            @if($unreadTesti > 0)
+                                <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $unreadTesti }}</span>
+                            @endif
+                        </span>
+                    </a>
+                    
+                    <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sistem</div>
+                    
+                    <a href="{{ route('admin.pages.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
+                        <i data-lucide="file-text" class="w-5 h-5"></i> Halaman CMS
+                    </a>
+                    
+                    <a href="{{ route('admin.settings.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                        <i data-lucide="settings" class="w-5 h-5"></i> Pengaturan
+                    </a>
+                    
+                    @if(Auth::user()->isSuperAdmin())
+                        <a href="{{ route('admin.users.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i> Kelola Pengguna
+                        </a>
+                    @endif
+                @endif
             </div>
             
             <div class="p-4 border-t border-gray-200">
@@ -121,40 +157,76 @@
                     <div class="w-px h-6 bg-gray-200"></div>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-forest-100 flex items-center justify-center text-forest-600 font-bold text-sm">
-                            A
+                            {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
                         </div>
-                        <span class="text-sm font-medium text-gray-700 hidden sm:block">{{ session('admin_name', 'Administrator') }}</span>
+                        <span class="text-sm font-medium text-gray-700 hidden sm:block">{{ Auth::user()->name ?? 'Administrator' }}</span>
                     </div>
                 </div>
             </header>
             
             {{-- Content Area --}}
             <div class="flex-1 overflow-y-auto p-6">
+                {{-- SweetAlert2 Flash Alerts --}}
                 @if(session('success'))
-                <div class="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6 flex items-start gap-3 shadow-sm">
-                    <i data-lucide="check-circle" class="w-5 h-5 text-green-500 shrink-0 mt-0.5"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: "{{ session('success') }}",
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            toast: true,
+                            position: 'top-end',
+                            background: '#ffffff',
+                            iconColor: '#10b981',
+                            customClass: {
+                                popup: 'rounded-xl shadow-lg border border-gray-100'
+                            }
+                        });
+                    });
+                </script>
                 @endif
                 
                 @if(session('error'))
-                <div class="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 mb-6 flex items-start gap-3 shadow-sm">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0 mt-0.5"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi Kesalahan!',
+                            text: "{{ session('error') }}",
+                            confirmButtonColor: '#059669', // Forest Green
+                            background: '#ffffff',
+                            customClass: {
+                                popup: 'rounded-2xl shadow-xl border border-gray-100',
+                                confirmButton: 'px-6 py-2.5 bg-forest-600 hover:bg-forest-700 rounded-xl font-bold text-sm text-white'
+                            }
+                        });
+                    });
+                </script>
                 @endif
                 
                 @if($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 mb-6 flex items-start gap-3 shadow-sm">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0 mt-0.5"></i>
-                    <div>
-                        <ul class="list-disc list-inside">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validasi Gagal!',
+                            html: `<ul class="text-left list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                   </ul>`,
+                            confirmButtonColor: '#059669', // Forest Green
+                            background: '#ffffff',
+                            customClass: {
+                                popup: 'rounded-2xl shadow-xl border border-gray-100',
+                                confirmButton: 'px-6 py-2.5 bg-forest-600 hover:bg-forest-700 rounded-xl font-bold text-sm text-white'
+                            }
+                        });
+                    });
+                </script>
                 @endif
 
                 @yield('content')
@@ -273,6 +345,71 @@
 
         // Poll every 5 seconds (5000ms)
         setInterval(checkUnreadCounts, 5000);
+
+        // Global SweetAlert2 confirm dialog interceptor for forms with confirm dialogues
+        document.addEventListener('DOMContentLoaded', function() {
+            const interceptConfirm = function(form) {
+                if (form && !form.dataset.swalAttached) {
+                    form.dataset.swalAttached = 'true';
+                    const originalOnSubmit = form.getAttribute('onsubmit');
+                    let message = 'Apakah Anda yakin ingin menghapus data ini?';
+                    if (originalOnSubmit) {
+                        const match = originalOnSubmit.match(/confirm\(['"](.*?)['"]\)/);
+                        if (match && match[1]) {
+                            message = match[1];
+                        }
+                    }
+                    form.removeAttribute('onsubmit');
+                    
+                    // Determine if this is a checkout action instead of a deletion
+                    const isCheckout = message.toLowerCase().includes('check-out') || 
+                                       message.toLowerCase().includes('checkout') || 
+                                       message.toLowerCase().includes('keluar');
+
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: isCheckout ? 'Konfirmasi Check Out' : 'Konfirmasi Hapus',
+                            text: message,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: isCheckout ? '#059669' : '#ef4444', // Forest Green for checkout, Red for delete
+                            cancelButtonColor: '#6b7280', // Soft Gray
+                            confirmButtonText: isCheckout ? 'Ya, Check Out!' : 'Ya, Hapus!',
+                            cancelButtonText: 'Batal',
+                            background: '#ffffff',
+                            color: '#1f2937',
+                            iconColor: isCheckout ? '#059669' : '#f59e0b',
+                            reverseButtons: true,
+                            customClass: {
+                                popup: 'rounded-2xl shadow-xl border border-gray-100',
+                                confirmButton: 'px-5 py-2.5 rounded-xl font-semibold text-sm',
+                                cancelButton: 'px-5 py-2.5 rounded-xl font-semibold text-sm'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    });
+                }
+            };
+
+            // Intercept pre-existing forms
+            document.querySelectorAll('form[onsubmit*="confirm"]').forEach(interceptConfirm);
+
+            // Dynamically intercept clicked forms (covers Ajax or dynamic loads)
+            document.addEventListener('click', function(e) {
+                const deleteBtn = e.target.closest('form[onsubmit*="confirm"] button, form[onsubmit*="confirm"] input[type="submit"]');
+                if (deleteBtn) {
+                    const form = deleteBtn.closest('form');
+                    if (form && !form.dataset.swalAttached) {
+                        interceptConfirm(form);
+                        form.requestSubmit ? form.requestSubmit() : form.submit();
+                    }
+                }
+            });
+        });
     </script>
     @stack('scripts')
 </body>
