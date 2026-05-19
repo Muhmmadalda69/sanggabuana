@@ -17,6 +17,11 @@ class DashboardController extends Controller
 {
     private function ensureSchemaIsUpToDate()
     {
+        // In production, migrations are handled by deployment scripts
+        if (app()->environment('production')) {
+            return;
+        }
+
         try {
             if (!\Illuminate\Support\Facades\Schema::hasTable('visitors')) {
                 \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
@@ -26,7 +31,7 @@ class DashboardController extends Controller
                 \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
             }
         } catch (\Exception $e) {
-            throw $e;
+            \Illuminate\Support\Facades\Log::warning('Database setup check skipped or failed: ' . $e->getMessage());
         }
     }
 
@@ -343,6 +348,11 @@ class DashboardController extends Controller
         $destinationId = $request->input('destination_id');
         $destination = Destination::findOrFail($destinationId);
 
+        // Security check: cashier can only process ticket for their own destination
+        if ($user->isKasir() && $user->destination_id !== $destination->id) {
+            abort(403, 'Anda hanya dapat memproses tiket untuk destinasi tugas Anda.');
+        }
+
         // Validation based on destination
         $rules = [
             'name' => 'required|string|max:255',
@@ -466,6 +476,11 @@ class DashboardController extends Controller
         $user = Auth::user();
         if (!$user->isKasir() && !$user->isSuperadmin()) {
             abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        // Security check: cashier can only check out visitor of their own destination
+        if ($user->isKasir() && $visitor->destination_id !== $user->destination_id) {
+            abort(403, 'Anda hanya dapat mengubah status pengunjung untuk destinasi tugas Anda.');
         }
 
         if ($visitor->status !== 'in') {

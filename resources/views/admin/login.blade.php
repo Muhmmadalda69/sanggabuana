@@ -79,11 +79,7 @@
                 </div>
             </form>
             
-            <div class="mt-6 text-center text-forest-400 text-sm">
-                Gunakan kredensial default: <br>
-                Email: <strong>admin@sanggabuana.com</strong><br>
-                Password: <strong>admin123</strong>
-            </div>
+
         </div>
         
         <div class="text-center mt-8 text-forest-500 text-sm">

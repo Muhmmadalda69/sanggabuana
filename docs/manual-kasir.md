@@ -120,6 +120,4 @@ Menu **Destinasi Saya** memberi hak akses terbatas bagi Kasir untuk memperbarui 
 ### ⚙️ Hal-hal yang Dapat Kasir Ubah:
 1. **Koordinat Peta**: Mengatur titik garis lintang (latitude) dan garis bujur (longitude) lokasi loket agar marker koordinat titik merah di peta dasbor dan landing page tampil akurat.
 2. **Jam & Hari Operasional**: Memperbarui jadwal hari operasional loket dan jam buka-tutup pelayanan.
-3. **Status Peringatan Cuaca (Jalur Darurat)**:
-   * Jika di lapangan terjadi cuaca buruk, badai, atau pohon tumbang, Kasir dapat segera mengganti status cuaca ke **Manual**.
-   * Masukkan pesan siaga (misal: *Jalur ditutup karena hujan lebat*) beserta deskripsi alasannya agar seketika muncul spanduk peringatan darurat di landing page utama demi keselamatan wisatawan.
+3. **Detail Informasi Lainnya**: Memperbarui harga dasar tiket, deskripsi operasional, estimasi durasi kunjungan, serta daftar kontak WhatsApp/Sosial Media destinasi tugas secara mandiri.

@@ -15,46 +15,48 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        // Self-healing migration & user seeding trigger on login page load
-        try {
-            if (!\Illuminate\Support\Facades\Schema::hasTable('visitors')) {
-                \Illuminate\Support\Facades\DB::table('migrations')
-                    ->where('migration', '2026_05_18_190000_create_visitors_table')
-                    ->delete();
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            }
-
-            if (\App\Models\Visitor::count() === 0) {
-                \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-            }
-
-            if (\App\Models\User::count() === 0) {
-                \App\Models\User::create([
-                    'name' => 'Super Administrator',
-                    'email' => 'superadmin@sanggabuana.com',
-                    'password' => \Illuminate\Support\Facades\Hash::make('superadmin123'),
-                    'role' => 'superadmin',
-                ]);
-                \App\Models\User::create([
-                    'name' => 'Administrator',
-                    'email' => 'admin@sanggabuana.com',
-                    'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
-                    'role' => 'admin',
-                ]);
-
-                // Create default Cashiers for all destinations
-                foreach (\App\Models\Destination::all() as $dest) {
-                    \App\Models\User::create([
-                        'name' => 'Kasir ' . $dest->name,
-                        'email' => 'kasir.' . $dest->slug . '@sanggabuana.com',
-                        'password' => \Illuminate\Support\Facades\Hash::make('kasir123'),
-                        'role' => 'kasir',
-                        'destination_id' => $dest->id,
-                    ]);
+        // Self-healing migration & user seeding trigger on login page load (disabled in production)
+        if (!app()->environment('production')) {
+            try {
+                if (!\Illuminate\Support\Facades\Schema::hasTable('visitors')) {
+                    \Illuminate\Support\Facades\DB::table('migrations')
+                        ->where('migration', '2026_05_18_190000_create_visitors_table')
+                        ->delete();
+                    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
                 }
+
+                if (\App\Models\Visitor::count() === 0) {
+                    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+                }
+
+                if (\App\Models\User::count() === 0) {
+                    \App\Models\User::create([
+                        'name' => 'Super Administrator',
+                        'email' => 'superadmin@sanggabuana.com',
+                        'password' => \Illuminate\Support\Facades\Hash::make('superadmin123'),
+                        'role' => 'superadmin',
+                    ]);
+                    \App\Models\User::create([
+                        'name' => 'Administrator',
+                        'email' => 'admin@sanggabuana.com',
+                        'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+                        'role' => 'admin',
+                    ]);
+
+                    // Create default Cashiers for all destinations
+                    foreach (\App\Models\Destination::all() as $dest) {
+                        \App\Models\User::create([
+                            'name' => 'Kasir ' . $dest->name,
+                            'email' => 'kasir.' . $dest->slug . '@sanggabuana.com',
+                            'password' => \Illuminate\Support\Facades\Hash::make('kasir123'),
+                            'role' => 'kasir',
+                            'destination_id' => $dest->id,
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Ignore database connection issues during migration setup
             }
-        } catch (\Exception $e) {
-            // Ignore database connection issues during migration setup
         }
 
         if (session('admin_authenticated') && \Illuminate\Support\Facades\Auth::check()) {

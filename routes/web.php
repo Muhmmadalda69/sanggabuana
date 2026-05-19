@@ -51,17 +51,21 @@ Route::prefix('admin')->name('admin.')->middleware(AdminAuth::class)->group(func
     Route::post('/monitoring/{visitor}/checkout', [DashboardController::class, 'monitoringCheckout'])->name('monitoring.checkout');
 
     Route::resource('destinations', DestinationController::class)->except(['show']);
-    Route::resource('galleries', GalleryController::class)->except(['show']);
-    Route::resource('testimonials', TestimonialController::class)->except(['show']);
-    Route::patch('testimonials/{testimonial}/toggle', [TestimonialController::class, 'toggle'])->name('testimonials.toggle');
-    Route::resource('pages', PageController::class)->except(['show']);
 
-    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
-    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+    // Admin & Superadmin only routes
+    Route::middleware('admin_or_superadmin')->group(function () {
+        Route::resource('galleries', GalleryController::class)->except(['show']);
+        Route::resource('testimonials', TestimonialController::class)->except(['show']);
+        Route::patch('testimonials/{testimonial}/toggle', [TestimonialController::class, 'toggle'])->name('testimonials.toggle');
+        Route::resource('pages', PageController::class)->except(['show']);
 
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+        Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+        Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    });
 
     // RBAC routes - only accessible by superadmin role
     Route::middleware('superadmin')->group(function () {
