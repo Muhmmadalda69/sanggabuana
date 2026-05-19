@@ -3,6 +3,19 @@ set -e
 
 echo "=== Deployment Started ==="
 
+# 0. Ensure .env file exists
+if [ ! -f .env ]; then
+    if [ -f .env.production ]; then
+        echo ".env file not found! Copying from .env.production..."
+        cp .env.production .env
+        echo "Please edit the newly created .env file with your production credentials, then run ./deploy.sh again."
+        exit 1
+    else
+        echo "Error: Neither .env nor .env.production was found. Please create a .env file."
+        exit 1
+    fi
+fi
+
 # 1. Pull latest changes
 echo "Pulling latest code changes..."
 git pull origin main
@@ -11,6 +24,12 @@ git pull origin main
 echo "Building and starting Docker containers..."
 docker compose down
 docker compose up -d --build
+
+# 2.5 Ensure APP_KEY is generated
+if ! grep -q "APP_KEY=base64" .env; then
+    echo "APP_KEY is empty. Generating a new application key..."
+    docker compose exec -T app php artisan key:generate
+fi
 
 # 3. Wait for DB to be ready
 echo "Waiting for database to be ready..."

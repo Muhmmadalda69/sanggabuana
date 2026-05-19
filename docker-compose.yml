@@ -9,6 +9,7 @@ services:
       - "8000:80"
     volumes:
       - sanggabuana_storage:/var/www/html/storage
+      - ./.env:/var/www/html/.env
     depends_on:
       - db
     env_file:
