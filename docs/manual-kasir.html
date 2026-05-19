@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual Book Admin - Wisata Gunung Sanggabuana</title>
+    <title>Manual Book Kasir - Wisata Gunung Sanggabuana</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
             --sidebar-text: #94a3b8;
             --sidebar-text-active: #ffffff;
             --sidebar-item-hover: rgba(255, 255, 255, 0.06);
-            --sidebar-item-active: #15803d; /* Forest Green */
+            --sidebar-item-active: #16a34a; /* Forest Green */
             
             --text-main: #1e293b;
             --text-muted: #64748b;
@@ -112,7 +112,7 @@
 
         .sidebar-header {
             padding: 24px;
-            border-b: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -122,7 +122,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #22c55e, #15803d);
+            background: linear-gradient(135deg, #16a34a, #15803d);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -321,10 +321,14 @@
 
         /* DOCUMENTATION TYPOGRAPHY & ELEMENTS */
         .doc-section {
-            display: block;
+            display: none;
             margin-bottom: 60px;
             padding-top: 20px;
             animation: fadeIn 0.5s ease;
+        }
+
+        .doc-section.active-section {
+            display: block;
         }
 
         @keyframes fadeIn {
@@ -501,7 +505,7 @@
             left: 0;
             width: 100%;
             height: 4px;
-            background: linear-gradient(90deg, #22c55e, #15803d);
+            background: linear-gradient(90deg, #16a34a, #15803d);
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -642,75 +646,6 @@
             line-height: 1.6;
         }
 
-        /* SPECIAL BADGES */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-green {
-            background-color: #dcfce7;
-            color: #15803d;
-        }
-
-        [data-theme="dark"] .badge-green {
-            background-color: rgba(22, 163, 74, 0.2);
-            color: #4ade80;
-        }
-
-        .badge-red {
-            background-color: #fee2e2;
-            color: #b91c1c;
-        }
-
-        [data-theme="dark"] .badge-red {
-            background-color: rgba(220, 38, 38, 0.2);
-            color: #f87171;
-        }
-
-        .badge-amber {
-            background-color: #fef3c7;
-            color: #b45309;
-        }
-
-        [data-theme="dark"] .badge-amber {
-            background-color: rgba(217, 119, 6, 0.2);
-            color: #fbbf24;
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #22c55e;
-            display: inline-block;
-            position: relative;
-        }
-
-        .pulse-dot::after {
-            content: "";
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background-color: #22c55e;
-            position: absolute;
-            left: 0;
-            top: 0;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(2.5); opacity: 0; }
-        }
-
         /* SCREENSHOT PLACEHOLDER */
         .visual-mockup {
             border: 1px solid var(--border-color);
@@ -747,7 +682,7 @@
 
         .mockup-dashboard {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 16px;
         }
 
@@ -795,12 +730,6 @@
             }
 
             .mockup-dashboard {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 640px) {
-            .mockup-dashboard {
                 grid-template-columns: 1fr;
             }
         }
@@ -812,10 +741,10 @@
     <div class="mobile-header">
         <div style="display: flex; align-items: center; gap: 10px;">
             <div class="sidebar-logo-icon" style="width: 32px; height: 32px; border-radius: 8px;">
-                <i data-lucide="map" style="width: 18px; height: 18px;"></i>
+                <i data-lucide="ticket" style="width: 18px; height: 18px;"></i>
             </div>
             <div class="sidebar-title" style="font-size: 0.95rem;">
-                Sanggabuana <span>Admin Docs</span>
+                Sanggabuana <span>Kasir Docs</span>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 16px;">
@@ -832,11 +761,11 @@
     <aside id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo-icon">
-                <i data-lucide="compass" class="w-6 h-6"></i>
+                <i data-lucide="ticket" class="w-6 h-6"></i>
             </div>
             <div class="sidebar-title">
                 Sanggabuana
-                <span>Admin Portal V1.0</span>
+                <span>Kasir Portal V1.0</span>
             </div>
         </div>
 
@@ -848,29 +777,20 @@
         <nav class="sidebar-nav">
             <div class="nav-label">PENDAHULUAN</div>
             <ul class="nav-list">
-                <li class="nav-item active" data-target="pendahuluan"><a href="#pendahuluan"><i data-lucide="book-open" class="w-4 h-4"></i> Pengantar</a></li>
-                <li class="nav-item" data-target="akses"><a href="#akses"><i data-lucide="key-round" class="w-4 h-4"></i> Akses &amp; Login</a></li>
+                <li class="nav-item active" data-target="pengantar"><a href="#pengantar"><i data-lucide="book-open" class="w-4 h-4"></i> Pengantar</a></li>
+                <li class="nav-item" data-target="login"><a href="#login"><i data-lucide="key-round" class="w-4 h-4"></i> Akses &amp; Login</a></li>
             </ul>
 
-            <div class="nav-label">PANDUAN MODUL</div>
+            <div class="nav-label">LOKET &amp; MONITORING</div>
             <ul class="nav-list">
-                <li class="nav-item" data-target="dashboard"><a href="#dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dasbor Utama</a></li>
-                <li class="nav-item" data-target="destinasi"><a href="#destinasi"><i data-lucide="mountain" class="w-4 h-4"></i> Destinasi Wisata</a></li>
-                <li class="nav-item" data-target="galeri"><a href="#galeri"><i data-lucide="image" class="w-4 h-4"></i> Galeri Foto</a></li>
-                <li class="nav-item" data-target="testimoni"><a href="#testimoni"><i data-lucide="message-square" class="w-4 h-4"></i> Testimoni Ulasan</a></li>
-                <li class="nav-item" data-target="halaman"><a href="#halaman"><i data-lucide="file-text" class="w-4 h-4"></i> Halaman Statis</a></li>
-                <li class="nav-item" data-target="kontak"><a href="#kontak"><i data-lucide="mail" class="w-4 h-4"></i> Pesan Masuk</a></li>
+                <li class="nav-item" data-target="dashboard"><a href="#dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dasbor &amp; Peta</a></li>
+                <li class="nav-item" data-target="pos"><a href="#pos"><i data-lucide="calculator" class="w-4 h-4"></i> Penjualan POS Tiket</a></li>
+                <li class="nav-item" data-target="monitoring"><a href="#monitoring"><i data-lucide="users" class="w-4 h-4"></i> Monitoring Check-Out</a></li>
             </ul>
 
-            <div class="nav-label">PENGATURAN</div>
+            <div class="nav-label">KONFIGURASI LOKASI</div>
             <ul class="nav-list">
-                <li class="nav-item" data-target="pengaturan"><a href="#pengaturan"><i data-lucide="settings" class="w-4 h-4"></i> Pengaturan Global</a></li>
-                <li class="nav-item" data-target="cuaca"><a href="#cuaca"><i data-lucide="cloud-lightning" class="w-4 h-4"></i> Siaga Cuaca (Jalur)</a></li>
-            </ul>
-
-            <div class="nav-label">KEAMANAN &amp; RBAC</div>
-            <ul class="nav-list">
-                <li class="nav-item" data-target="rbac"><a href="#rbac"><i data-lucide="users" class="w-4 h-4"></i> Manajemen Role &amp; Kasir</a></li>
+                <li class="nav-item" data-target="destinasi"><a href="#destinasi"><i data-lucide="mountain" class="w-4 h-4"></i> Destinasi Saya</a></li>
             </ul>
         </nav>
 
@@ -886,7 +806,7 @@
         <div class="top-bar">
             <div class="doc-meta">
                 <i data-lucide="info" class="w-4 h-4 text-forest-600"></i>
-                <span>Manual Book ini disusun untuk kebutuhan pengelolaan administrator internal.</span>
+                <span>Manual Book ini disusun untuk kebutuhan operasional kasir loket.</span>
             </div>
             <div class="controls">
                 <button class="theme-toggle-btn" id="theme-toggle-btn" title="Ganti Tema">
@@ -895,42 +815,42 @@
             </div>
         </div>
 
-        <!-- SECTION 1: PENDAHULUAN -->
-        <section id="pendahuluan" class="doc-section active-section">
-            <h1>🗺️ Manual Book Admin</h1>
-            <div class="doc-subtitle">Selamat datang di Pusat Panduan Administrator Website Wisata Gunung Sanggabuana. Dokumen ini dirancang khusus dengan langkah ringkas, modern, dan mudah dipahami agar Anda dapat menguasai pengelolaan website dengan cepat.</div>
+        <!-- SECTION 1: PENGANTAR -->
+        <section id="pengantar" class="doc-section active-section">
+            <h1>🎫 Manual Book Kasir</h1>
+            <div class="doc-subtitle">Selamat datang di Pusat Panduan Kasir Loket Wisata Gunung Sanggabuana. Dokumen ini dirancang khusus untuk memandu kasir lapangan dalam mengoperasikan transaksi tiket dan mengawasi pengunjung.</div>
             
-            <h2>Pengenalan Portal</h2>
-            <p>Portal Administrator Wisata Gunung Sanggabuana adalah panel kontrol untuk memperbarui informasi seputar pariwisata alam. Mulai dari memperbarui rincian keunikan jalur pendakian, mengunggah foto galeri keindahan alam, menyeleksi ulasan, hingga merilis status siaga cuaca darurat demi keselamatan pengunjung.</p>
+            <h2>Pengantar Tugas Kasir</h2>
+            <p>Sebagai Kasir Destinasi, Anda bertindak sebagai garda terdepan pencatatan logistik pengunjung. Tugas utama Anda meliputi memproses pendaftaran loket POS secara cepat, menerbitkan struk dan QR Code tiket, mengawasi status kepulangan pengunjung (check-out), serta memperbarui siaga status cuaca/jalur darurat secara real-time pada destinasi tugas Anda.</p>
 
             <div class="stat-grid">
                 <div class="feature-card">
-                    <div class="card-icon"><i data-lucide="heart" class="w-6 h-6"></i></div>
-                    <div class="card-title">Mudah Digunakan</div>
-                    <div class="card-text">Formulir isian didesain ramah pengguna dan dilengkapi pengolah teks visual modern.</div>
-                </div>
-                <div class="feature-card">
-                    <div class="card-icon"><i data-lucide="shield-check" class="w-6 h-6"></i></div>
-                    <div class="card-title">Aman &amp; Andal</div>
-                    <div class="card-text">Dilengkapi proteksi sesi administrator untuk memastikan keamanan data portal.</div>
-                </div>
-                <div class="feature-card">
                     <div class="card-icon"><i data-lucide="zap" class="w-6 h-6"></i></div>
-                    <div class="card-title">Instan &amp; Responsif</div>
-                    <div class="card-text">Setiap perubahan konten yang Anda lakukan akan langsung tersaji real-time kepada pengunjung.</div>
+                    <div class="card-title">Loket POS Cepat</div>
+                    <div class="card-text">Formulir dinamis yang beradaptasi secara instan dengan destinasi tugas Anda.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><i data-lucide="user-check" class="w-6 h-6"></i></div>
+                    <div class="card-title">Keamanan Terjamin</div>
+                    <div class="card-text">Memantau durasi dan check-out pengunjung demi keamanan kawasan hutan lindung.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
+                    <div class="card-title">Siaga Cuaca Mandiri</div>
+                    <div class="card-text">Merilis peringatan tutup jalur secara cepat jika terjadi kondisi force majeure.</div>
                 </div>
             </div>
         </section>
 
         <hr>
 
-        <!-- SECTION 2: AKSES -->
-        <section id="akses" class="doc-section">
-            <h2>🔐 Akses &amp; Autentikasi</h2>
-            <p>Sebelum mengelola website, Anda wajib melakukan otentikasi login melalui formulir khusus yang aman.</p>
+        <!-- SECTION 2: LOGIN -->
+        <section id="login" class="doc-section">
+            <h2>🔐 Akses &amp; Login Kasir</h2>
+            <p>Portal Kasir diakses menggunakan otentikasi login khusus yang membatasi hak akses Anda hanya pada lingkup loket tugas Anda.</p>
             
-            <h3>🌐 URL Login Admin</h3>
-            <p>Buka peramban (browser) Anda, lalu navigasikan ke halaman berikut:</p>
+            <h3>🌐 URL Halaman Login</h3>
+            <p>Buka peramban (browser) di komputer/tablet loket Anda, kemudian navigasikan ke alamat:</p>
             <div class="code-box">
                 <div class="code-header">
                     <span>URL LINK</span>
@@ -938,20 +858,20 @@
                 <div class="code-content">http://nama-domain-website.com/admin/login</div>
             </div>
 
-            <h3>🔑 Kredensial Masuk Utama</h3>
-            <p>Gunakan data akses default berikut untuk masuk ke dashboard admin:</p>
+            <h3>🔑 Akun Kasir Default</h3>
+            <p>Data login awal (seeder) yang disediakan oleh sistem:</p>
             
             <div class="code-box">
                 <div class="code-header">
-                    <span>ADMIN DEFAULT CREDENTIALS</span>
+                    <span>KASIR DEFAULT CREDENTIALS</span>
                     <button class="copy-btn" onclick="copyCredentials()"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Kredensial</button>
                 </div>
-                <div class="code-content" id="cred-text">Email    : admin@sanggabuana.com&#10;Password : admin123</div>
+                <div class="code-content" id="cred-text">Email    : kasir.gunung-sanggabuana@sanggabuana.com&#10;Password : kasir123</div>
             </div>
 
             <div class="alert alert-important">
                 <i data-lucide="alert-octagon"></i>
-                <strong>Pemberitahuan Keamanan:</strong> Harap jaga kerahasiaan data email dan password di atas. Lakukan perubahan kredensial secara berkala jika pengelola sistem sudah memasang modul ganti sandi demi keamanan.
+                <strong>Perhatian Keamanan:</strong> Jangan berikan kata sandi Anda kepada orang lain. Email Anda terikat langsung ke objek wisata tertentu dan semua riwayat penjualan tercatat atas nama akun Anda.
             </div>
         </section>
 
@@ -959,341 +879,149 @@
 
         <!-- SECTION 3: DASHBOARD -->
         <section id="dashboard" class="doc-section">
-            <h2>📊 Dasbor Utama (Dashboard)</h2>
-            <p>Setelah login sukses, Anda disambut oleh halaman ringkasan kerja. Dasbor ini didesain agar Anda dapat memantau produktivitas website sekilas pandang.</p>
+            <h2>📊 Dasbor Kasir &amp; Peta Persebaran</h2>
+            <p>Dasbor menyajikan status statistik harian secara visual untuk membantu Anda memantau kinerja operasional loket.</p>
 
             <div class="visual-mockup">
                 <div class="mockup-header">
                     <span class="mockup-dot red"></span>
                     <span class="mockup-dot yellow"></span>
                     <span class="mockup-dot green"></span>
-                    <span style="margin-left: 10px; font-size: 0.75rem; color: var(--text-muted);">Sanggabuana Admin Dashboard</span>
+                    <span style="margin-left: 10px; font-size: 0.75rem; color: var(--text-muted);">Sanggabuana Kasir Dashboard</span>
                 </div>
                 <div class="mockup-body">
                     <div class="mockup-dashboard">
                         <div class="mockup-stat-box">
-                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">DESTINASI</span>
-                            <div class="mockup-stat-val">6</div>
+                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">OMZET HARI INI</span>
+                            <div class="mockup-stat-val">Rp 350.000</div>
                         </div>
                         <div class="mockup-stat-box">
-                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">GALERI</span>
-                            <div class="mockup-stat-val">12</div>
-                        </div>
-                        <div class="mockup-stat-box">
-                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">PESAN</span>
-                            <div class="mockup-stat-val">5</div>
+                            <span style="font-size: 0.75rem; font-weight:600; color: var(--text-muted);">PENGUNJUNG AKTIF</span>
+                            <div class="mockup-stat-val">24 Orang</div>
                         </div>
                         <div class="mockup-stat-box" style="background-color: var(--accent-light);">
-                            <span style="font-size: 0.75rem; font-weight:600; color: var(--accent-dark);">STATUS WEB</span>
+                            <span style="font-size: 0.75rem; font-weight:600; color: var(--accent-dark);">LOKET</span>
                             <div class="mockup-stat-val" style="color: var(--accent-dark); font-size: 1.2rem; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:8px;">
-                                <span class="pulse-dot"></span> ONLINE
+                                BUKA
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <h3>📊 Komponen Dasbor</h3>
+            <h3>📈 Fitur Utama Dasbor Kasir</h3>
             <ul>
-                <li><strong>Kartu Statistik Cepat:</strong> Menampilkan total destinasi, foto galeri, testimoni, dan akumulasi pesan masuk real-time.</li>
-                <li><strong>Status Situs Web:</strong> Kotak bergradasi hijau yang menandakan situs sedang aktif di internet, dilengkapi tombol pintas menuju halaman frontend.</li>
-                <li><strong>Aktivitas Terbaru:</strong> Dua tabel di bagian bawah dasbor yang memuat 5 pesan masuk terbaru serta 5 destinasi yang baru saja dibuat atau dimodifikasi oleh admin.</li>
+                <li><strong>Statistik Omzet &amp; Tiket:</strong> Melacak total pendapatan kasir harian beserta pembagian metode pembayaran secara real-time.</li>
+                <li><strong>Auto-Focus Peta:</strong> Peta interaktif Leaflet di dashboard akan secara otomatis berpusat (*auto-center* dan *zoom* level 10) pada koordinat destinasi tugas Anda demi mempermudah pemetaan visual.</li>
+                <li><strong>Filter Peta Indonesia/Dunia:</strong> Dropdown untuk mengubah peta visual antara:
+                    <ul>
+                        <li><strong>🇮🇩 Peta Indonesia (Kota):</strong> Melihat kepadatan asal kota pengunjung di seluruh wilayah Indonesia.</li>
+                        <li><strong>🌎 Peta Dunia (Negara):</strong> Melihat negara asal wisatawan jika terdapat turis mancanegara.</li>
+                    </ul>
+                </li>
+                <li><strong>Penerjemah Bahasa Otomatis:</strong> Sistem secara cerdas menerjemahkan input nama negara lokal (misal: "Jepang", "Belanda", "Rusia") menjadi penamaan resmi standar dunia (Japan, Netherlands, Russia) agar wilayah peta mancanegara tetap terwarnai akurat.</li>
             </ul>
         </section>
 
         <hr>
 
-        <!-- SECTION 4: DESTINASI -->
-        <section id="destinasi" class="doc-section">
-            <h2>🏔️ Pengelolaan Destinasi Wisata</h2>
-            <p>Fitur ini merupakan jantung utama sistem, berguna untuk menampilkan ragam lokasi wisata alam yang memukau di kawasan Gunung Sanggabuana.</p>
+        <!-- SECTION 4: POS -->
+        <section id="pos" class="doc-section">
+            <h2>🎫 Penjualan Tiket (POS Loket)</h2>
+            <p>Menu POS Tiket dirancang dinamis dengan mendeteksi jenis destinasi wisata tempat Anda ditugaskan:</p>
 
-            <h3>📝 Parameter Form Pengisian Destinasi</h3>
-            <p>Saat menekan tombol <strong>Tambah Destinasi</strong>, Anda akan disajikan formulir lengkap dengan parameter berikut:</p>
-
+            <h3>A. Formulir Khusus Gunung Sanggabuana (Pendakian)</h3>
+            <p>Formulir memuat isian wajib untuk keselamatan dan logistik rombongan pendakian:</p>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>Nama Kolom</th>
-                            <th>Panduan Pengisian &amp; Validasi</th>
-                            <th>Contoh Konten</th>
+                            <th>Parameter Input</th>
+                            <th>Keterangan Pengisian</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>Nama Destinasi</strong></td>
-                            <td>Teks judul destinasi wajib diisi. Sistem otomatis membuat slug URL ramah SEO.</td>
-                            <td><code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Curug Cigentis</code></td>
+                            <td><strong>Nama Penanggung Jawab</strong></td>
+                            <td>Nama ketua kelompok / perwakilan yang bertanggung jawab atas rombongan.</td>
                         </tr>
                         <tr>
-                            <td><strong>Deskripsi Pendek</strong></td>
-                            <td>Teks ringkasan daya tarik utama. Maksimal 500 karakter untuk keindahan tata letak beranda.</td>
-                            <td>Air terjun megah setinggi 50 meter tersembunyi di jantung hutan Sanggabuana yang perawan.</td>
+                            <td><strong>Alamat Pengunjung</strong></td>
+                            <td>Formulir terstruktur lengkap: Provinsi, Kabupaten/Kota, Kecamatan, dan Kelurahan asal ketua rombongan.</td>
                         </tr>
                         <tr>
-                            <td><strong>Deskripsi Lengkap</strong></td>
-                            <td>Teks editorial lengkap. Disediakan editor teks WYSIWYG untuk menyusun paragraf dan gaya tulisan.</td>
-                            <td>Paragraf seputar sejarah, keistimewaan, rute trekking, dan detail daya tarik objek wisata.</td>
+                            <td><strong>Tujuan Kunjungan</strong></td>
+                            <td>Dropdown pilihan: *Hiking &amp; Camping*, *Trail Running*, atau *Wisata Religi/Ziarah*. Pilihan ini memengaruhi logistik lapangan.</td>
                         </tr>
                         <tr>
-                            <td><strong>Foto Utama</strong></td>
-                            <td>Foto beresolusi tajam berformat JPG, PNG, atau WebP. Batas ukuran berkas maksimal <strong>5 MB</strong>.</td>
-                            <td>curug_cigentis_view.jpg</td>
+                            <td><strong>Jumlah Laki-laki &amp; Perempuan</strong></td>
+                            <td>Jumlah persis rombongan untuk pendataan evakuasi darurat. Total rombongan dihitung otomatis.</td>
                         </tr>
                         <tr>
-                            <td><strong>Garis Lintang (Latitude)</strong></td>
-                            <td>Koordinat lintang destinasi untuk pemetaan peta interaktif (berupa angka desimal).</td>
-                            <td><code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">-6.7275</code></td>
+                            <td><strong>Rata-rata Usia</strong></td>
+                            <td>Menentukan batasan rentang umur rombongan demi keamanan fisik pendakian.</td>
                         </tr>
                         <tr>
-                            <td><strong>Garis Bujur (Longitude)</strong></td>
-                            <td>Koordinat bujur destinasi untuk pemetaan peta interaktif (berupa angka desimal).</td>
-                            <td><code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">107.0394</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Metadata Lainnya</strong></td>
-                            <td>Isi detail pendukung seperti Ketinggian (Mdpl), Harga Tiket (Angka saja), Hari &amp; Jam Buka.</td>
-                            <td>Altitude: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">800 mdpl</code>, Price: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">15000</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Urutan &amp; Publikasi</strong></td>
-                            <td>Input angka urutan tampil dan centang box Aktif/Featured untuk menayangkan langsung destinasi tersebut.</td>
-                            <td>Urutan: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">1</code> (Artinya tampil di urutan teratas)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Kontak Pengelola Wisata</strong></td>
-                            <td>Tambahkan baris kontak pengelola khusus per destinasi seperti nomor WhatsApp atau link Instagram secara dinamis.</td>
-                            <td>Platform: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">WhatsApp</code>, Value: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">08123456789</code></td>
+                            <td><strong>Harga per Tiket</strong></td>
+                            <td>Nilai bawaan HTM destinasi. Dapat **diubah secara manual** oleh kasir jika ada kebijakan diskon khusus atau tiket rombongan gratis.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="alert alert-tip">
-                <i data-lucide="check-circle2"></i>
-                <strong>Tips Sukses:</strong> Gunakan foto utama dengan landscape rasio (16:9) agar tampilan detail destinasi di mata pengunjung tampak maksimal dan elegan.
-            </div>
+            <h3>B. Formulir Destinasi Umum</h3>
+            <p>Untuk objek wisata non-pendakian (misalnya kolam renang/curug), formulir dipermudah dengan isian nama penanggung jawab, asal kota, jumlah tiket total, rata-rata usia, metode pembayaran, dan harga per tiket yang dapat diubah manual.</p>
+
+            <h3>C. Cetak E-Ticket</h3>
+            <p>Setiap transaksi sukses akan menampilkan pop-up struk digital yang memuat detail pembelian tiket, nominal kembalian, dan **simulasi QR Code**. Harap pastikan printer kasir dalam kondisi menyala untuk mencetak struk fisik bagi rombongan.</p>
         </section>
 
         <hr>
 
-        <!-- SECTION 5: GALERI -->
-        <section id="galeri" class="doc-section">
-            <h2>📸 Pengelolaan Galeri Foto</h2>
-            <p>Galeri berguna mengarsipkan rekaman keindahan panorama alam Sanggabuana dalam format visual grid yang rapi.</p>
-
-            <h3>➕ Langkah Membuat Galeri Foto Baru</h3>
-            <ul>
-                <li>Navigasikan ke menu <strong>Galeri</strong> di sidebar kiri, lalu klik tombol <strong>Tambah Galeri</strong>.</li>
-                <li><strong>Destinasi Terkait:</strong> Hubungkan foto dengan salah satu objek wisata pendukung. Jika merupakan foto umum pegunungan, Anda dapat mengosongkannya.</li>
-                <li><strong>Judul &amp; Caption Foto:</strong> Berikan judul yang informatif serta caption singkat agar memperkuat aspek visual foto di halaman pengunjung.</li>
-                <li><strong>Berkas Foto:</strong> Pilih foto terbaik Anda. Sistem membatasi kapasitas berkas maksimal <strong>5 MB</strong> untuk memastikan loading website tetap super cepat.</li>
-                <li>Atur prioritas nomor urutan tampil serta centang status <strong>Aktif</strong> sebelum menekan tombol <strong>Simpan</strong>.</li>
-            </ul>
-        </section>
-
-        <hr>
-
-        <!-- SECTION 6: TESTIMONI -->
-        <section id="testimoni" class="doc-section">
-            <h2>💬 Pengelolaan Testimoni &amp; Ulasan</h2>
-            <p>Komentar dan ulasan dari petualang sangat berharga dalam meningkatkan citra kawasan wisata Sanggabuana.</p>
-
-            <div class="alert alert-tip">
-                <i data-lucide="thumbs-up"></i>
-                <strong>Persetujuan Cepat (Instant Toggle):</strong> Anda tidak perlu membuka form edit untuk mempublikasikan ulasan. Cukup klik tombol toggle berstatus <span class="badge badge-green">Aktif</span> atau <span class="badge badge-amber">Draft</span> pada tabel utama, maka status ulasan di beranda depan langsung berganti detik itu juga!
-            </div>
-
-            <h3>📝 Parameter Ulasan</h3>
-            <p>Admin juga dapat menerbitkan ulasan manual (misalnya hasil wawancara pengunjung atau ulasan tokoh nasional):</p>
-            <ul>
-                <li><strong>Nama Tokoh / Pengunjung:</strong> Nama lengkap pemberi testimoni.</li>
-                <li><strong>Peran (Role):</strong> Profesi atau gelar, contoh: *Pendaki Profesional*, *Travel Blogger*, *Keluarga Wisatawan*.</li>
-                <li><strong>Penilaian Rating:</strong> Skala nilai bintang 1 sampai 5 bintang.</li>
-                <li><strong>Foto Profil / Avatar:</strong> Wajah pemberi ulasan (Maksimal berkas <strong>2 MB</strong>).</li>
-            </ul>
-        </section>
-
-        <hr>
-
-        <!-- SECTION 7: HALAMAN -->
-        <section id="halaman" class="doc-section">
-            <h2>📄 Pengelolaan Halaman Informasi</h2>
-            <p>Halaman Informasi digunakan untuk menulis dokumen hukum atau profil umum seperti halaman *Tentang Kami*, *Syarat &amp; Ketentuan*, dan *Panduan Pendakian Aman*.</p>
-
-            <h3>🛠️ Keunggulan Fitur Halaman</h3>
-            <ul>
-                <li><strong>Visual Editor (WYSIWYG):</strong> Anda bebas berkreasi merancang struktur tulisan menggunakan tebal, miring, list balet, hingga menyisipkan link artikel eksternal.</li>
-                <li><strong>Otomatisasi Slug:</strong> Tulis judul halaman Anda, sistem akan merapikan link URL halaman tersebut secara otomatis agar ramah mesin pencarian Google (misal judul <em>"Syarat & Ketentuan"</em> berubah menjadi link akhir <em>"halaman/syarat-ketentuan"</em>).</li>
-                <li><strong>SEO Meta Deskripsi:</strong> Sediakan rangkuman halaman 1-2 kalimat agar situs Anda mendapat posisi strategis pada pencarian Google.</li>
-            </ul>
-        </section>
-
-        <hr>
-
-        <!-- SECTION 8: KONTAK -->
-        <section id="kontak" class="doc-section">
-            <h2>✉️ Manajemen Pesan Masuk (Kontak)</h2>
-            <p>Saluran komunikasi utama pengunjung ke meja kerja admin untuk pertanyaan, kritik, atau kerja sama bisnis.</p>
-
-            <h3>📥 Prosedur Pengelolaan Pesan</h3>
-            <ul>
-                <li><strong>Indikator Notifikasi:</strong> Ikon pesan pada dashboard menyala dengan tanda merah jika terdapat pesan baru.</li>
-                <li><strong>Baca Detil Pesan:</strong> Klik baris pesan pada tabel kontak. Sistem otomatis menampilkan isi pesan lengkap dan langsung mengubah status pesan menjadi <span class="badge badge-green">Sudah Dibaca</span> secara cerdas.</li>
-                <li><strong>Penghapusan Berkas:</strong> Untuk menjaga kerapihan penyimpanan database, Anda dapat membuang pesan bernada spam dengan menekan ikon tong sampah merah pada daftar aksi.</li>
-            </ul>
-        </section>
-
-        <hr>
-
-        <!-- SECTION 9: PENGATURAN -->
-        <section id="pengaturan" class="doc-section">
-            <h2>⚙️ Pengaturan Global (Settings)</h2>
-            <p>Pusat kendali operasional website untuk memperbarui identitas branding, visual landing page, dan tautan sosial media resmi.</p>
-
-            <div class="stat-grid">
-                <div class="feature-card">
-                    <div class="card-icon" style="background-color:#fee2e2; color:#ef4444;"><i data-lucide="globe" class="w-6 h-6"></i></div>
-                    <div class="card-title">Umum &amp; Sosmed</div>
-                    <div class="card-text">Ubah nama web, deskripsi footer, alamat email pengelola, dan tautan resmi Instagram/YouTube.</div>
-                </div>
-                <div class="feature-card">
-                    <div class="card-icon" style="background-color:#fef3c7; color:#d97706;"><i data-lucide="monitor" class="w-6 h-6"></i></div>
-                    <div class="card-title">Visual Hero Banner</div>
-                    <div class="card-text">Sesuaikan judul sambutan halaman beranda, sub-judul, serta ganti gambar latar belakang utama secara mandiri.</div>
-                </div>
-                <div class="feature-card">
-                    <div class="card-icon" style="background-color:#dcfce7; color:#16a34a;"><i data-lucide="video" class="w-6 h-6"></i></div>
-                    <div class="card-title">Video Profil &amp; Fitur</div>
-                    <div class="card-text">Unggah langsung video profil berdurasi singkat atau sisipkan link video YouTube beserta susunan kartu kelebihan pariwisata.</div>
-                </div>
-            </div>
-        </section>
-
-        <hr>
-
-        <!-- SECTION 10: CUACA -->
-        <section id="cuaca" class="doc-section">
-            <h2>☁️ Kondisi Jalur &amp; Siaga Cuaca</h2>
-            <p>Fitur krusial bagi pariwisata alam pegunungan untuk menjaga keselamatan petualang dari bahaya cuaca buruk di wilayah Sanggabuana.</p>
+        <!-- SECTION 5: MONITORING -->
+        <section id="monitoring" class="doc-section">
+            <h2>👁️ Monitoring Pengunjung &amp; Check-Out</h2>
+            <p>Menu Monitoring digunakan kasir untuk memantau status wisatawan yang sedang berada di dalam objek wisata.</p>
 
             <div class="alert alert-warning">
                 <i data-lucide="alert-triangle"></i>
-                <strong>Status Darurat:</strong> Gunakan <strong>Mode Manual</strong> jika terjadi badai, longsor, pohon tumbang, atau penutupan berkala jalur pendakian agar pengunjung mendapat peringatan yang mencolok di beranda depan.
+                <strong>Tugas Wajib Kasir:</strong> Pastikan Anda melakukan check-out pada sistem saat pengunjung melapor keluar loket untuk memastikan keakuratan jumlah pengunjung di area pegunungan demi keamanan.
             </div>
 
-            <h3>🔄 Pilihan Mode Siaga Cuaca</h3>
-            
-            <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px;">
-                    <div style="display:flex; align-items:center; gap:8px; font-weight:700; color: var(--accent); margin-bottom:10px;">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 animate-spin" style="animation-duration: 4s;"></i> MODE OTOMATIS (AUTO)
-                    </div>
-                    <p style="font-size:0.85rem; margin:0;">Sistem memonitor cuaca dari server BMKG/Weather API berdasarkan koordinat <strong>Latitude &amp; Longitude</strong> yang diinput. Sangat praktis untuk kondisi normal sehari-hari.</p>
-                </div>
-                <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px;">
-                    <div style="display:flex; align-items:center; gap:8px; font-weight:700; color: #ef4444; margin-bottom:10px;">
-                        <i data-lucide="bell" class="w-5 h-5"></i> MODE MANUAL (DARURAT)
-                    </div>
-                    <p style="font-size:0.85rem; margin:0;">Admin mengabaikan pembacaan otomatis dan memasang status siaga buatan secara mandiri. Sangat efektif memblokir akses sementara karena force majeure.</p>
-                </div>
-            </div>
-
-            <h3 style="margin-top: 30px;">✍️ Formulir Siaga Manual</h3>
+            <h3>📥 Prosedur Check-Out:</h3>
             <ul>
-                <li><strong>Status Manual / Darurat:</strong> Judul pesan peringatan singkat, misal: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Jalur Pendakian Ditutup sementara</code></li>
-                <li><strong>Deskripsi Kondisi:</strong> Detail info penyebab penutupan, misal: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Penutupan jalur dari Pos 2 akibat hujan badai ekstrem dan risiko pohon tumbang</code></li>
-                <li><strong>Ikon Status:</strong> Pilih ikon penunjang visual darurat, seperti ikon segitiga peringatan (<code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">alert-triangle</code>).</li>
+                <li>Navigasikan ke menu **Monitoring** di sidebar kiri.</li>
+                <li>Temukan nama rombongan yang akan keluar menggunakan fitur **Pencarian Cepat** (ketik Nama, Nomor Tiket, atau Nama Komunitas).</li>
+                <li>Klik tombol merah **"Check Out"** pada kolom aksi.</li>
+                <li>Setelah konfirmasi, status pengunjung langsung berubah menjadi selesai dan sistem secara otomatis menghitung **Durasi Kunjungan** rombongan tersebut dari sejak check-in.</li>
             </ul>
         </section>
 
         <hr>
 
-        <!-- SECTION 11: RBAC -->
-        <section id="rbac" class="doc-section">
-            <h2>👥 Role-Based Access Control (RBAC) &amp; Manajemen Kasir</h2>
-            <p>Sistem pariwisata Gunung Sanggabuana kini dilengkapi dengan fitur keamanan <strong>Role-Based Access Control (RBAC)</strong> yang membagi wewenang admin ke dalam 3 tingkatan peran (role) yang berbeda demi menjaga integritas data masing-masing destinasi wisata.</p>
+        <!-- SECTION 6: DESTINASI -->
+        <section id="destinasi" class="doc-section">
+            <h2>🏔️ Destinasi Saya (Kelola Lokasi)</h2>
+            <p>Kasir diberikan wewenang terbatas untuk mengelola lokasi wisata tempatnya bertugas secara mandiri tanpa perlu bergantung penuh pada admin pusat.</p>
 
-            <h3>🎭 Tingkatan Peran &amp; Wewenang</h3>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Peran (Role)</th>
-                            <th>Hak Akses Utama</th>
-                            <th>Batasan Akses</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Superadmin</strong></td>
-                            <td>Seluruh fitur sistem + Kelola Pengguna &amp; Peran (RBAC)</td>
-                            <td>Tidak ada batasan akses.</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Admin</strong></td>
-                            <td>Mengelola seluruh Konten Wisata, Interaksi, Halaman, dan Pengaturan</td>
-                            <td>Tidak dapat mengelola user/peran baru (Menu Kelola Pengguna disembunyikan).</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Kasir</strong></td>
-                            <td>Mengakses loket POS (Point of Sales) tiket destinasi tugasnya &amp; mengedit destinasi tugasnya saja</td>
-                            <td>Hanya dapat mengakses Dashboard Kasir dan mengedit destinasi tugasnya. Tidak dapat mengakses Galeri, Halaman, Pesan, Pengaturan, atau membuat/menghapus destinasi.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <h3>🔑 Kredensial Default Peran Baru</h3>
-            <p>Sistem secara otomatis menyediakan kredensial bawaan berikut di database untuk kemudahan uji coba:</p>
+            <h3>⚙️ Konfigurasi Mandiri yang Dapat Diubah:</h3>
             <ul>
-                <li><strong>Super Administrator:</strong> Email <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">superadmin@sanggabuana.com</code> / Password <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">superadmin123</code> (Role: Superadmin)</li>
-                <li><strong>Administrator:</strong> Email <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">admin@sanggabuana.com</code> / Password <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">admin123</code> (Role: Admin)</li>
-                <li><strong>Kasir Destinasi:</strong> Email <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">kasir.[slug]@sanggabuana.com</code> (contoh: <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">kasir.gunung-sanggabuana@sanggabuana.com</code>) / Password <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px; color:var(--text-main);">kasir123</code> (Role: Kasir)</li>
-            </ul>
-
-            <h3>📈 1. Menu Data Statistik (Dashboard Utama)</h3>
-            <p>Dashboard utama kini diubah total menjadi halaman <strong>Data Statistik Pengunjung</strong> yang kaya data analitis dan filterable.</p>
-            <ul>
-                <li><strong>Fitur Filter Waktu:</strong> Seluruh data statistik dapat difilter secara fleksibel per Hari Ini (harian), Bulan Ini (bulanan), dan Tahun Ini (tahunan).</li>
-                <li><strong>Filter Destinasi Khusus Admin:</strong> Khusus untuk peran <strong>Superadmin</strong> dan <strong>Admin</strong>, terdapat filter tambahan berupa dropdown destinasi untuk menganalisis data secara mandiri atau gabungan.</li>
-                <li><strong>Peta Persebaran Pengunjung (Leaflet Map):</strong>
+                <li><strong>Jam &amp; Hari Buka Loket:</strong> Sesuaikan jika terdapat perubahan operasional seperti libur hari besar atau pergeseran jam tutup loket.</li>
+                <li><strong>Koordinat Lintang (Latitude) &amp; Bujur (Longitude):</strong> Atur koordinat peta presisi lokasi destinasi wisata Anda agar marker merah Leaflet Map di dasbor dan landing page terarah dengan tepat.</li>
+                <li><strong>Siaga Cuaca Darurat (Manual Override):</strong>
                     <ul>
-                        <li>Peta interaktif yang otomatis beradaptasi. Jika Admin menyaring data ke destinasi tertentu atau jika pengguna masuk sebagai Kasir, peta akan otomatis berfokus (*auto-center* dan *zoom-in* level 10) pada koordinat lokasi destinasi tersebut.</li>
-                        <li><strong>Filter Wilayah (Peta):</strong> Pengguna dapat menukar tampilan visual peta menggunakan dropdown filter wilayah:
-                            <ul>
-                                <li><strong>🇮🇩 Peta Indonesia (Kota):</strong> Mewarnai wilayah berdasarkan intensitas kunjungan per Kabupaten/Kota asal pengunjung di Indonesia.</li>
-                                <li><strong>🌎 Peta Dunia (Negara):</strong> Mewarnai wilayah berdasarkan negara asal pengunjung di seluruh dunia secara merata (termasuk Indonesia secara utuh).</li>
-                            </ul>
-                        </li>
-                        <li><strong>Auto-Translation Bahasa:</strong> Sistem secara cerdas memetakan nama negara yang diinput kasir dalam bahasa Indonesia (seperti "Jepang", "Jerman", "Singapura", "Belanda") atau bentuk singkatan ("USA", "US") ke standar data peta dunia resmi agar wilayah terwarnai dengan tepat.</li>
+                        <li>Ubah dropdown Mode Cuaca menjadi **Manual** jika terjadi hujan lebat, badai, atau pohon tumbang di jalur trekking.</li>
+                        <li>Isi judul peringatan (contoh: *Jalur Ditutup Sementara*) dan tulis alasannya di deskripsi.</li>
+                        <li>Seketika, widget info cuaca di landing page utama website akan memunculkan spanduk darurat merah menyala untuk memblokir pendaftaran/kedatangan pengunjung demi keselamatan bersama.</li>
                     </ul>
                 </li>
-                <li><strong>Visual Premium Pendukung:</strong> Rasio Gender (laki-laki/perempuan), Kategori Usia (dewasa/anak-anak), Tujuan Kunjungan (hiking/camping/religi/ziarah khusus Sanggabuana), Metode Pembayaran (Tunai/QRIS/Transfer), dan Grafik Tren Pengunjung interaktif.</li>
-            </ul>
-
-            <h3>🎫 2. Menu POS Tiket (Adaptive Input Form)</h3>
-            <p>Menu <strong>POS Tiket</strong> dirancang khusus untuk memproses pendaftaran pengunjung di lapangan dengan formulir dinamis yang beradaptasi secara cerdas berdasarkan destinasi tugas aktif kasir:</p>
-            <ul>
-                <li><strong>Formulir Khusus Gunung Sanggabuana:</strong> Memuat kolom Nama Penanggung Jawab, Alamat Pengunjung, Nama Komunitas (Opsional), Tujuan Kunjungan, Jumlah Anggota Laki-laki &amp; Perempuan, Rata-rata Usia, Metode Pembayaran, dan Harga Tiket (Manual Override).</li>
-                <li><strong>Formulir Destinasi Lain:</strong> Disederhanakan dengan isian standar: Nama Pengunjung, Alamat Pengunjung, Jumlah Anggota, Rata-rata Usia, Metode Pembayaran, dan Harga Tiket (Manual Override).</li>
-                <li><strong>Simulasi Cetak E-Ticket:</strong> Sistem menerbitkan receipt lengkap dengan QR Code simulasi.</li>
-            </ul>
-
-            <h3>👁️ 3. Menu Monitoring Pengunjung</h3>
-            <p>Menu <strong>Monitoring Pengunjung</strong> adalah pintu gerbang keluar masuk wisatawan untuk menjamin keamanan di dalam lokasi wisata.</p>
-            <ul>
-                <li><strong>Status Pengunjung:</strong> Menampilkan pengunjung dengan status <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Di Dalam Lokasi</code> (in) dan <code style="background-color:var(--code-bg); padding:2px 6px; border-radius:4px;">Selesai</code> (out). Durasi kunjungan dihitung otomatis setelah check-out.</li>
-                <li><strong>Gerbang Check-Out:</strong> Kasir cukup mengeklik tombol "Check Out" berwarna merah untuk mengubah status pengunjung secara instan.</li>
-                <li><strong>Pencarian Cepat:</strong> Pencarian instan berdasarkan Nama, Nomor Tiket, atau Nama Komunitas, serta filter status (in/out).</li>
             </ul>
         </section>
 
         <hr>
         
         <p style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 60px;">
-            Dibuat dengan dedikasi tinggi &bull; Wisata Gunung Sanggabuana Admin Manual Book &bull; Dirancang untuk Efisiensi Kerja.
+            Dibuat dengan dedikasi tinggi &bull; Wisata Gunung Sanggabuana Kasir Manual Book &bull; Dirancang untuk Efisiensi Kerja.
         </p>
     </main>
 
@@ -1393,7 +1121,7 @@
 
         // COPY CREDENTIALS FUNCTION
         function copyCredentials() {
-            const textToCopy = `Email: admin@sanggabuana.com\nPassword: admin123`;
+            const textToCopy = `Email: kasir.gunung-sanggabuana@sanggabuana.com\nPassword: kasir123`;
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const copyBtn = document.querySelector('.copy-btn');
                 const originalHtml = copyBtn.innerHTML;

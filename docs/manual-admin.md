@@ -90,7 +90,8 @@ Saat mengelola destinasi, berikut kolom-kolom informasi yang dapat Anda isi:
 | **Jam Operasional** | Teks | Rentang waktu buka, misal: *08:00 - 17:00* atau *24 Jam*. |
 | **Harga Tiket** | Angka | Tarif masuk dalam rupiah tanpa simbol, misal: *15000*. |
 | **Durasi Perjalanan** | Teks | Estimasi waktu tempuh, misal: *2-3 jam trekking*. |
-| **Koordinat Map** | Angka (Lat & Long) | Titik lokasi Google Maps untuk integrasi peta presisi. |
+| **Garis Lintang (Latitude)** | Angka Desimal | Koordinat lintang destinasi untuk pemetaan peta interaktif (contoh: `-6.7275`). |
+| **Garis Bujur (Longitude)** | Angka Desimal | Koordinat bujur destinasi untuk pemetaan peta interaktif (contoh: `107.0394`). |
 | **Urutan Tampil** | Angka | Urutan penyusunan di halaman depan (misal: urutan `1` tampil pertama). |
 | **Status Aktif** | Switch/Checkbox | Aktifkan agar destinasi langsung tampil di website. Matikan untuk menyimpan sebagai draft. |
 | **Rekomendasi Utama**| Switch/Checkbox | Jika dicentang, destinasi akan masuk ke bagian "Destinasi Unggulan" di halaman utama. |
@@ -232,10 +233,17 @@ Dashboard utama kini diubah total menjadi halaman **Data Statistik Pengunjung** 
 * **Fitur Filter Waktu:** Seluruh data statistik dapat difilter secara fleksibel per Hari Ini (harian), Bulan Ini (bulanan), dan Tahun Ini (tahunan).
 * **Filter Destinasi Khusus Admin:** Khusus untuk peran **Superadmin** dan **Admin**, terdapat filter tambahan berupa dropdown **Destinasi Wisata** untuk menganalisis data per lokasi wisata spesifik atau secara agregat (semua destinasi).
 * **Komponen Visual Premium:**
+  - **Peta Persebaran Pengunjung (Leaflet Map):**
+    - Peta interaktif yang otomatis beradaptasi. Jika Admin menyaring data ke destinasi tertentu atau jika pengguna masuk sebagai Kasir, peta akan otomatis berfokus (*auto-center* dan *zoom-in* level 10) pada koordinat lokasi destinasi tersebut.
+    - **Filter Wilayah (Peta):** Pengguna dapat menukar tampilan visual peta menggunakan dropdown filter wilayah:
+      * **🇮🇩 Peta Indonesia (Kota):** Mewarnai wilayah berdasarkan intensitas kunjungan per Kabupaten/Kota asal pengunjung di Indonesia.
+      * **🌎 Peta Dunia (Negara):** Mewarnai wilayah berdasarkan negara asal pengunjung di seluruh dunia secara merata (termasuk Indonesia secara utuh).
+      * **Auto-Translation Bahasa:** Sistem secara cerdas memetakan nama negara yang diinput kasir dalam bahasa Indonesia (seperti "Jepang", "Jerman", "Singapura", "Belanda") atau bentuk singkatan ("USA", "US") ke standar data peta dunia resmi agar wilayah terwarnai dengan tepat.
   - **Rasio Gender:** Diagram kemajuan perbandingan jumlah pengunjung Laki-laki vs Perempuan.
-  - **Tujuan Kunjungan (Khusus Gunung Sanggabuana):** Grafik batang distribusi tujuan pengunjung (Hiking & Camping, Trail Running, Wisata Religi/Ziarah).
+  - **Kategori Usia:** Grafik lingkar perbandingan jumlah pengunjung Dewasa vs Anak-anak.
+  - **Tujuan Kunjungan (Khusus Sanggabuana):** Grafik distribusi tujuan (Hiking & Camping, Trail Running, Wisata Religi).
   - **Metode Pembayaran:** Ringkasan efektivitas loket digital (Tunai, QRIS, Transfer).
-  - **Grafik Tren Pengunjung:** Visualisasi interaktif SVG yang melacak lonjakan frekuensi pengunjung harian/bulanan beserta akumulasi omzet pendapatan tiket.
+  - **Grafik Tren Pengunjung:** Visualisasi tren harian/bulanan dan omzet pendapatan tiket.
 
 ---
 
