@@ -6,7 +6,7 @@ services:
     container_name: sanggabuana_app
     restart: always
     ports:
-      - "8000:80"
+      - "80:80"
     volumes:
       - sanggabuana_storage:/var/www/html/storage
       - ./.env:/var/www/html/.env
