@@ -309,6 +309,30 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function posQuota(Request $request)
+    {
+        $user = Auth::user();
+        $destination = $user->isKasir() ? $user->destination : Destination::find($request->input('destination_id'));
+        if (!$destination) return response()->json(['error' => 'Not found'], 404);
+
+        $date = $request->input('date', today()->toDateString());
+        $booked = Visitor::where('destination_id', $destination->id)
+            ->where('visit_date', $date)
+            ->whereIn('status', ['pending', 'in'])
+            ->sum('qty_total');
+
+        $quota = $destination->daily_quota;
+        $remaining = $quota ? max(0, $quota - $booked) : null;
+
+        return response()->json([
+            'date' => $date,
+            'quota' => $quota,
+            'booked' => (int) $booked,
+            'remaining' => $remaining,
+            'is_full' => $quota ? $booked >= $quota : false,
+        ]);
+    }
+
     public function posIndex()
     {
         $this->ensureSchemaIsUpToDate();
@@ -328,13 +352,15 @@ class DashboardController extends Controller
             return view('admin.dashboard_kasir_fallback');
         }
 
-        // Retrieve last 10 transactions
-        $recentTransactions = Visitor::where('destination_id', $destination->id)
-            ->latest()
-            ->limit(10)
-            ->get();
+        // Retrieve last 10 transactions grouped by group_id
+        $recentGroups = Visitor::where('destination_id', $destination->id)
+            ->whereNotNull('group_id')
+            ->orderByDesc('checked_in_at')
+            ->get()
+            ->groupBy('group_id')
+            ->take(10);
 
-        return view('admin.pos', compact('destination', 'recentTransactions'));
+        return view('admin.pos', compact('destination', 'recentGroups'));
     }
 
     public function posStore(Request $request)
@@ -353,10 +379,161 @@ class DashboardController extends Controller
             abort(403, 'Anda hanya dapat memproses tiket untuk destinasi tugas Anda.');
         }
 
+        if ($destination->has_member_details) {
+            $rules = [
+                'name' => 'required|string|max:255',
+                'leader_gender' => 'required|string|in:L,P',
+                'leader_address' => 'required|string|max:500',
+                'leader_email' => 'nullable|email|max:255',
+                'leader_age' => 'required|integer|min:1|max:120',
+                'members' => 'nullable|array',
+                'members.*.name' => 'required|string|max:255',
+                'members.*.email' => 'nullable|email|max:255',
+                'members.*.age' => 'required|integer|min:1|max:120',
+                'members.*.gender' => 'required|string|in:L,P',
+                'members.*.address' => 'required|string|max:500',
+                'members.*.address_type' => 'required|string|in:lokal,indonesia,mancanegara',
+                'members.*.province' => 'required|string|max:255',
+                'members.*.city' => 'required|string|max:255',
+                'address_type' => 'required|string|in:lokal,indonesia,mancanegara',
+                'province' => 'required|string|max:255',
+                'city' => 'required|string|max:255',
+                'payment_method' => 'required|string|in:Tunai,QRIS,Transfer',
+                'price' => 'required|numeric|min:0',
+            ];
+
+            if ($destination->has_purpose) {
+                $rules['purpose'] = 'required|string|in:Hiking,Trail Run,Jiarah';
+                if ($request->input('purpose') === 'Hiking') {
+                    $rules['camping_duration'] = 'required|integer|min:1';
+                }
+            }
+
+            $request->validate($rules);
+
+            $members = $request->input('members');
+            $createdTicketIds = [];
+
+            // Generate one group_id for the entire rombongan
+            $groupId = 'GRP-' . Carbon::now()->format('Ymd') . '-' . strtoupper(Str::random(6));
+
+            // Base ticket counter — use max existing sequence number to avoid gaps/duplicates
+            $todayStr = Carbon::now()->format('Ymd');
+            $maxTicket = Visitor::whereDate('created_at', Carbon::today())
+                ->where('ticket_no', 'like', 'TKT-' . $todayStr . '-%')
+                ->max('ticket_no');
+            $ticketCounter = $maxTicket ? (int) substr($maxTicket, -4) : 0;
+
+            // Create ticket for the leader (penanggung jawab) first
+            $leaderAge = (int) $request->input('leader_age');
+            $leaderGender = $request->input('leader_gender');
+            $leaderTicketNo = 'TKT-' . $todayStr . '-' . str_pad(++$ticketCounter, 4, '0', STR_PAD_LEFT);
+
+            $leaderQtyMale = 0; $leaderQtyFemale = 0; $leaderQtyKids = 0;
+            if ($leaderAge < 5) { $leaderQtyKids = 1; }
+            elseif ($leaderGender === 'L') { $leaderQtyMale = 1; }
+            else { $leaderQtyFemale = 1; }
+
+            $leaderCombinedAddress = $request->input('leader_address') . ', ' . $request->input('city') . ', ' . $request->input('province');
+
+            $leaderVisitor = Visitor::create([
+                'destination_id' => $destination->id,
+                'group_id' => $groupId,
+                'visit_date' => Carbon::today()->toDateString(),
+                'ticket_no' => $leaderTicketNo,
+                'name' => $request->input('name'),
+                'email' => $request->input('leader_email'),
+                'age' => $leaderAge,
+                'address' => $leaderCombinedAddress,
+                'address_type' => $request->input('address_type'),
+                'city' => $request->input('city'),
+                'province' => $request->input('province'),
+                'community' => $request->input('community'),
+                'purpose' => $destination->has_purpose ? $request->input('purpose') : 'Normal',
+                'camping_duration' => ($destination->has_purpose && $request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null,
+                'qty_male' => $leaderQtyMale,
+                'qty_female' => $leaderQtyFemale,
+                'qty_kids' => $leaderQtyKids,
+                'qty_total' => 1,
+                'avg_age' => $leaderAge,
+                'price' => (int) $request->input('price'),
+                'total_price' => (int) $request->input('price'),
+                'payment_method' => $request->input('payment_method'),
+                'status' => 'in',
+                'checked_in_at' => Carbon::now(),
+            ]);
+            $createdTicketIds[] = $leaderVisitor->id;
+
+            foreach ($members ?? [] as $index => $member) {
+                $ticketNo = 'TKT-' . $todayStr . '-' . str_pad(++$ticketCounter, 4, '0', STR_PAD_LEFT);
+
+                // Determine demographic count based on age, gender, and is_child flag
+                $qtyMale = 0;
+                $qtyFemale = 0;
+                $qtyKids = 0;
+
+                $age = (int) $member['age'];
+                $isChild = !empty($member['is_child']) && $member['is_child'] == '1';
+
+                if ($isChild) {
+                    $qtyKids = 1;
+                } elseif ($member['gender'] === 'L') {
+                    $qtyMale = 1;
+                } else {
+                    $qtyFemale = 1;
+                }
+
+                // Apply kids discount if applicable
+                $basePrice = (int) $request->input('price');
+                $memberPrice = $isChild && $destination->kids_discount
+                    ? (int) round($basePrice * (1 - $destination->kids_discount / 100))
+                    : $basePrice;
+
+                $combinedAddress = $member['address'] . ', ' . ($member['city'] ?? $request->input('city')) . ', ' . ($member['province'] ?? $request->input('province'));
+
+                $visitor = Visitor::create([
+                    'destination_id' => $destination->id,
+                    'group_id' => $groupId,
+                    'visit_date' => Carbon::today()->toDateString(),
+                    'ticket_no' => $ticketNo,
+                    'name' => $member['name'],
+                    'email' => $member['email'],
+                    'age' => $age,
+                    'address' => $combinedAddress,
+                    'address_type' => $member['address_type'] ?? $request->input('address_type'),
+                    'city' => $member['city'] ?? $request->input('city'),
+                    'province' => $member['province'] ?? $request->input('province'),
+                    'community' => $request->input('community'),
+                    'purpose' => $destination->has_purpose ? $request->input('purpose') : 'Normal',
+                    'camping_duration' => ($destination->has_purpose && $request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null,
+                    'qty_male' => $qtyMale,
+                    'qty_female' => $qtyFemale,
+                    'qty_kids' => $qtyKids,
+                    'qty_total' => 1,
+                    'avg_age' => $age,
+                    'price' => $memberPrice,
+                    'total_price' => $memberPrice,
+                    'payment_method' => $request->input('payment_method'),
+                    'status' => 'in',
+                    'checked_in_at' => Carbon::now(),
+                ]);
+
+                $createdTicketIds[] = $visitor->id;
+            }
+
+            return redirect()->route('admin.pos.index')
+                ->with('success', count($createdTicketIds) . ' tiket berhasil diproses!')
+                ->with('print_group_id', $groupId)
+                ->with('print_ticket_ids', $createdTicketIds);
+        }
+
         // Validation based on destination
         $rules = [
             'name' => 'required|string|max:255',
             'leader_gender' => 'required|string|in:L,P',
+            'leader_address' => 'required|string|max:500',
+            'leader_email' => 'nullable|email|max:255',
+            'leader_age' => 'required|integer|min:1|max:120',
             'address_type' => 'required|string|in:lokal,indonesia,mancanegara',
             'province' => 'required|string|max:255',
             'city' => 'required|string|max:255',
@@ -395,16 +572,23 @@ class DashboardController extends Controller
 
         // Generate unique ticket number: TKT-YYYYMMDD-XXXX
         $todayStr = Carbon::now()->format('Ymd');
-        $todayTicketsCount = Visitor::whereDate('created_at', Carbon::today())->count();
-        $ticketNo = 'TKT-' . $todayStr . '-' . str_pad($todayTicketsCount + 1, 4, '0', STR_PAD_LEFT);
+        $maxTicket = Visitor::whereDate('created_at', Carbon::today())
+            ->where('ticket_no', 'like', 'TKT-' . $todayStr . '-%')
+            ->max('ticket_no');
+        $seq = $maxTicket ? (int) substr($maxTicket, -4) : 0;
+        $ticketNo = 'TKT-' . $todayStr . '-' . str_pad($seq + 1, 4, '0', STR_PAD_LEFT);
 
-        // Combine city and province for backward compatibility
-        $combinedAddress = $request->input('city') . ', ' . $request->input('province');
+        // Combine address for backward compatibility and to store leader address
+        $combinedAddress = $request->input('leader_address') . ', ' . $request->input('city') . ', ' . $request->input('province');
 
         $visitor = Visitor::create([
             'destination_id' => $destination->id,
+            'group_id' => $ticketNo,
+            'visit_date' => Carbon::today()->toDateString(),
             'ticket_no' => $ticketNo,
             'name' => $request->input('name'),
+            'email' => $request->input('leader_email'),
+            'age' => $request->input('leader_age'),
             'address' => $combinedAddress,
             'address_type' => $request->input('address_type'),
             'city' => $request->input('city'),
@@ -448,7 +632,7 @@ class DashboardController extends Controller
             return view('admin.dashboard_kasir_fallback');
         }
 
-        // Fetch active visitors inside ('in') and checked out ('out')
+        // Fetch visitors grouped by group_id
         $query = Visitor::where('destination_id', $destination->id);
 
         // Optional search filter
@@ -457,6 +641,7 @@ class DashboardController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('ticket_no', 'like', "%{$search}%")
+                  ->orWhere('group_id', 'like', "%{$search}%")
                   ->orWhere('community', 'like', "%{$search}%");
             });
         }
@@ -466,9 +651,41 @@ class DashboardController extends Controller
             $query->where('status', $request->status);
         }
 
-        $visitors = $query->latest()->paginate(15);
+        // Optional visit_date filter
+        if ($request->filled('visit_date')) {
+            $query->where('visit_date', $request->visit_date);
+        }
 
-        return view('admin.monitoring', compact('destination', 'visitors'));
+        // Get unique groups sorted by visit_date desc, then checked_in_at desc
+        $allGroupIds = (clone $query)->whereNotNull('group_id')
+            ->orderByRaw('COALESCE(visit_date, DATE(checked_in_at)) DESC')
+            ->orderByDesc('checked_in_at')
+            ->pluck('group_id')
+            ->unique()
+            ->values();
+
+        // Paginate group IDs manually
+        $perPage = 15;
+        $currentPage = $request->input('page', 1);
+        $pagedGroupIds = $allGroupIds->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        // Load all visitors for these groups
+        $groupedVisitors = Visitor::where('destination_id', $destination->id)
+            ->whereIn('group_id', $pagedGroupIds)
+            ->orderBy('checked_in_at')
+            ->get()
+            ->groupBy('group_id');
+
+        // Build paginator
+        $visitors = new \Illuminate\Pagination\LengthAwarePaginator(
+            $pagedGroupIds,
+            $allGroupIds->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('admin.monitoring', compact('destination', 'visitors', 'groupedVisitors'));
     }
 
     public function monitoringCheckout(Visitor $visitor)
@@ -493,6 +710,90 @@ class DashboardController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Pengunjung ' . $visitor->name . ' (' . $visitor->ticket_no . ') berhasil keluar dari lokasi.');
+    }
+
+    public function monitoringGroupCheckout(Request $request, string $groupId)
+    {
+        $user = Auth::user();
+        if (!$user->isKasir() && !$user->isSuperadmin()) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        $members = Visitor::where('group_id', $groupId)->where('status', 'in')->get();
+
+        if ($members->isEmpty()) {
+            return redirect()->back()->with('error', 'Semua anggota rombongan sudah keluar.');
+        }
+
+        // Security check
+        if ($user->isKasir()) {
+            $members->each(function($v) use ($user) {
+                if ($v->destination_id !== $user->destination_id) abort(403);
+            });
+        }
+
+        Visitor::where('group_id', $groupId)->where('status', 'in')->update([
+            'status' => 'out',
+            'checked_out_at' => Carbon::now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Rombongan ' . $groupId . ' (' . $members->count() . ' orang) berhasil check-out.');
+    }
+
+    public function monitoringUpdateStatus(Request $request, Visitor $visitor)
+    {
+        $user = Auth::user();
+        if (!$user->isKasir() && !$user->isSuperadmin()) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+        if ($user->isKasir() && $visitor->destination_id !== $user->destination_id) {
+            abort(403);
+        }
+
+        $newStatus = $request->input('status');
+        if (!in_array($newStatus, ['pending', 'in', 'out'])) {
+            return response()->json(['error' => 'Status tidak valid.'], 422);
+        }
+
+        $data = ['status' => $newStatus];
+        if ($newStatus === 'in' && !$visitor->checked_in_at) {
+            $data['checked_in_at'] = Carbon::now();
+        }
+        if ($newStatus === 'out' && !$visitor->checked_out_at) {
+            $data['checked_out_at'] = Carbon::now();
+        }
+
+        $visitor->update($data);
+
+        return response()->json(['success' => true, 'status' => $newStatus]);
+    }
+
+    public function monitoringPartialCheckout(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->isKasir() && !$user->isSuperadmin()) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        $visitorIds = $request->input('visitor_ids', []);
+        if (empty($visitorIds)) {
+            return redirect()->back()->with('error', 'Pilih minimal satu anggota untuk di-checkout.');
+        }
+
+        $visitors = Visitor::whereIn('id', $visitorIds)->where('status', 'in')->get();
+
+        if ($user->isKasir()) {
+            foreach ($visitors as $v) {
+                if ($v->destination_id !== $user->destination_id) abort(403);
+            }
+        }
+
+        Visitor::whereIn('id', $visitorIds)->where('status', 'in')->update([
+            'status' => 'out',
+            'checked_out_at' => Carbon::now(),
+        ]);
+
+        return redirect()->back()->with('success', $visitors->count() . ' anggota berhasil di-checkout.');
     }
 
     public function unreadCount()

@@ -47,6 +47,8 @@ class DestinationController extends Controller
             'operational_days' => 'nullable|string|max:100',
             'operational_hours' => 'nullable|string|max:100',
             'price' => 'nullable|numeric|min:0',
+            'daily_quota' => 'nullable|integer|min:1',
+            'kids_discount' => 'nullable|integer|min:0|max:100',
             'duration' => 'nullable|string|max:100',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
@@ -57,6 +59,8 @@ class DestinationController extends Controller
             'has_community' => 'nullable|boolean',
             'has_purpose' => 'nullable|boolean',
             'has_gender_details' => 'nullable|boolean',
+            'has_member_details' => 'nullable|boolean',
+            'has_online_registration' => 'nullable|boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -65,6 +69,8 @@ class DestinationController extends Controller
         $validated['has_community'] = $request->boolean('has_community');
         $validated['has_purpose'] = $request->boolean('has_purpose');
         $validated['has_gender_details'] = $request->boolean('has_gender_details');
+        $validated['has_member_details'] = $request->boolean('has_member_details');
+        $validated['has_online_registration'] = $request->boolean('has_online_registration');
 
         // Filter out empty contacts
         $contacts = $request->input('contacts', []);
@@ -116,6 +122,8 @@ class DestinationController extends Controller
             'operational_days' => 'nullable|string|max:100',
             'operational_hours' => 'nullable|string|max:100',
             'price' => 'nullable|numeric|min:0',
+            'daily_quota' => 'nullable|integer|min:1',
+            'kids_discount' => 'nullable|integer|min:0|max:100',
             'duration' => 'nullable|string|max:100',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
@@ -126,6 +134,8 @@ class DestinationController extends Controller
             'has_community' => 'nullable|boolean',
             'has_purpose' => 'nullable|boolean',
             'has_gender_details' => 'nullable|boolean',
+            'has_member_details' => 'nullable|boolean',
+            'has_online_registration' => 'nullable|boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -134,6 +144,8 @@ class DestinationController extends Controller
         $validated['has_community'] = $request->boolean('has_community');
         $validated['has_purpose'] = $request->boolean('has_purpose');
         $validated['has_gender_details'] = $request->boolean('has_gender_details');
+        $validated['has_member_details'] = $request->boolean('has_member_details');
+        $validated['has_online_registration'] = $request->boolean('has_online_registration');
 
         // Filter out empty contacts
         $contacts = $request->input('contacts', []);

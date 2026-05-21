@@ -9,9 +9,9 @@ class Destination extends Model
 {
     protected $fillable = [
         'name', 'slug', 'short_description', 'description', 'image',
-        'location', 'altitude', 'operational_days', 'operational_hours', 'price', 'duration',
+        'location', 'altitude', 'operational_days', 'operational_hours', 'price', 'daily_quota', 'kids_discount', 'duration',
         'latitude', 'longitude', 'is_featured', 'is_active', 'sort_order', 'contacts',
-        'has_community', 'has_purpose', 'has_gender_details',
+        'has_community', 'has_purpose', 'has_gender_details', 'has_member_details', 'has_online_registration',
     ];
 
     protected $casts = [
@@ -24,6 +24,8 @@ class Destination extends Model
         'has_community' => 'boolean',
         'has_purpose' => 'boolean',
         'has_gender_details' => 'boolean',
+        'has_member_details' => 'boolean',
+        'has_online_registration' => 'boolean',
     ];
 
     protected static function booted(): void

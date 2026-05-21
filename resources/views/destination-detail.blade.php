@@ -83,6 +83,37 @@
 
             {{-- Sidebar --}}
             <div class="space-y-8 animate-fade-up" style="animation-delay: 0.2s">
+                {{-- Online Registration Card --}}
+                @if($destination->has_online_registration)
+                <div class="bg-gradient-to-br from-forest-700 to-forest-900 rounded-3xl p-6 shadow-md text-white relative overflow-hidden" style="background: linear-gradient(135deg, #15803d 0%, #14532d 100%);">
+                    <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-4 translate-y-4">
+                        <i data-lucide="qr-code" class="w-48 h-48"></i>
+                    </div>
+                    
+                    <div class="relative z-10 text-center space-y-4">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                            Beli Tiket Online
+                        </span>
+                        
+                        <h3 class="font-extrabold text-white text-xl tracking-wide" style="color:white; margin:0;">Registrasi Online</h3>
+                        <p class="text-forest-100 text-xs leading-relaxed" style="color:#dcfce7; margin-top:8px;">Pindai QR Code atau klik tombol di bawah untuk registrasi dan membeli tiket masuk online.</p>
+                        
+                        {{-- QR Code --}}
+                        <div class="mx-auto w-36 h-36 p-2 bg-white rounded-2xl shadow-sm flex items-center justify-center">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode(route('destination.register.date', $destination->slug)) }}&margin=5" 
+                                 alt="QR Code Registrasi {{ $destination->name }}" 
+                                 class="w-full h-full object-contain">
+                        </div>
+                        
+                        {{-- Button --}}
+                        <a href="{{ route('destination.register.date', $destination->slug) }}" class="block w-full py-3 bg-white hover:bg-forest-50 text-forest-800 hover:text-forest-900 rounded-xl font-bold text-sm transition-all shadow-sm">
+                            Registrasi Sekarang
+                        </a>
+                    </div>
+                </div>
+                @endif
+
                 {{-- Quick Info --}}
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-forest-100">
                     <h3 class="font-bold text-forest-950 text-lg mb-6 pb-4 border-b border-forest-50">Informasi Penting</h3>

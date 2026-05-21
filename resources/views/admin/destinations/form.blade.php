@@ -69,6 +69,18 @@
                             <input type="number" name="price" value="{{ old('price', $destination->price ? (int)$destination->price : 0) }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-forest-500 focus:ring-forest-500 px-4 py-2 border">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kuota Harian <span class="text-xs text-gray-400 font-normal">(Kosongkan = tidak terbatas)</span></label>
+                            <input type="number" name="daily_quota" min="1" value="{{ old('daily_quota', $destination->daily_quota) }}" placeholder="Contoh: 100" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-forest-500 focus:ring-forest-500 px-4 py-2 border">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Diskon Anak-anak <span class="text-xs text-gray-400 font-normal">(% dari harga tiket, kosongkan = tidak ada diskon)</span></label>
+                            <div class="relative">
+                                <input type="number" name="kids_discount" min="0" max="100" value="{{ old('kids_discount', $destination->kids_discount) }}" placeholder="Contoh: 50" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-forest-500 focus:ring-forest-500 px-4 py-2 pr-10 border">
+                                <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 font-bold text-sm pointer-events-none">%</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Misal: isi 50 → anak-anak bayar 50% dari harga tiket.</p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Estimasi Waktu/Durasi</label>
                             <input type="text" name="duration" value="{{ old('duration', $destination->duration) }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-forest-500 focus:ring-forest-500 px-4 py-2 border" placeholder="Contoh: 4-5 jam">
                         </div>
@@ -111,6 +123,26 @@
                                 <div>
                                     <div class="font-semibold text-gray-900 text-sm">Tujuan Kunjungan</div>
                                     <div class="text-xs text-gray-500 mt-1">Aktifkan dropdown "Tujuan Kunjungan" (Hiking, Trail Run, Ziarah).</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" name="has_member_details" value="1" {{ old('has_member_details', $destination->has_member_details) ? 'checked' : '' }} class="w-5 h-5 mt-0.5 rounded text-forest-600 focus:ring-forest-500 border-gray-300">
+                                <div>
+                                    <div class="font-semibold text-gray-900 text-sm">Detail Anggota</div>
+                                    <div class="text-xs text-gray-500 mt-1">Aktifkan penginputan detail nama, alamat, email, usia, dan jenis kelamin untuk setiap anggota (satu tiket per orang).</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="checkbox" name="has_online_registration" value="1" {{ old('has_online_registration', $destination->has_online_registration) ? 'checked' : '' }} class="w-5 h-5 mt-0.5 rounded text-forest-600 focus:ring-forest-500 border-gray-300">
+                                <div>
+                                    <div class="font-semibold text-gray-900 text-sm">Registrasi Online</div>
+                                    <div class="text-xs text-gray-500 mt-1">Aktifkan QR Code dan tombol registrasi online mandiri di halaman detail destinasi.</div>
                                 </div>
                             </label>
                         </div>

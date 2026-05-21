@@ -9,8 +9,12 @@ class Visitor extends Model
 {
     protected $fillable = [
         'destination_id',
+        'group_id',
+        'visit_date',
         'ticket_no',
         'name',
+        'email',
+        'age',
         'address',
         'address_type',
         'city',

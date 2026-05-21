@@ -21,6 +21,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/destinasi', [HomeController::class, 'destinations'])->name('destinations');
 Route::get('/destinasi/{slug}', [HomeController::class, 'destination'])->name('destination.detail');
+Route::get('/destinasi/{slug}/registrasi', [HomeController::class, 'registerDatePicker'])->name('destination.register.date');
+Route::get('/destinasi/{slug}/registrasi/{date}', [HomeController::class, 'registerForm'])->name('destination.register');
+Route::post('/destinasi/{slug}/registrasi/{date}', [HomeController::class, 'registerStore'])->name('destination.register.store');
+Route::get('/destinasi/{slug}/kuota', [HomeController::class, 'quotaApi'])->name('destination.quota');
+Route::get('/destinasi/{slug}/kuota-bulan', [HomeController::class, 'quotaMonth'])->name('destination.quota.month');
 Route::post('/kontak', [HomeController::class, 'contact'])->name('contact.store');
 Route::get('/halaman/{slug}', [HomeController::class, 'page'])->name('page.show');
 Route::post('/ulasan', [HomeController::class, 'storeTestimonial'])->name('testimonials.store');
@@ -47,8 +52,12 @@ Route::prefix('admin')->name('admin.')->middleware(AdminAuth::class)->group(func
     // POS & Monitoring routes for Cashiers
     Route::get('/pos', [DashboardController::class, 'posIndex'])->name('pos.index');
     Route::post('/pos', [DashboardController::class, 'posStore'])->name('pos.store');
+    Route::get('/pos/quota', [DashboardController::class, 'posQuota'])->name('pos.quota');
     Route::get('/monitoring', [DashboardController::class, 'monitoringIndex'])->name('monitoring.index');
     Route::post('/monitoring/{visitor}/checkout', [DashboardController::class, 'monitoringCheckout'])->name('monitoring.checkout');
+    Route::post('/monitoring/group/{groupId}/checkout', [DashboardController::class, 'monitoringGroupCheckout'])->name('monitoring.group-checkout');
+    Route::post('/monitoring/partial-checkout', [DashboardController::class, 'monitoringPartialCheckout'])->name('monitoring.partial-checkout');
+    Route::patch('/monitoring/{visitor}/status', [DashboardController::class, 'monitoringUpdateStatus'])->name('monitoring.update-status');
 
     Route::resource('destinations', DestinationController::class)->except(['show']);
 

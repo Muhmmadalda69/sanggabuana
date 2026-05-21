@@ -58,7 +58,7 @@
 </style>
 
 {{-- Ticket Detail Modal Component --}}
-<div id="ticket-modal-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4" style="display:none; align-items: center; justify-content: center;">
+<div id="ticket-modal-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-100 hidden items-center justify-center p-4" style="display:none; align-items: center; justify-content: center;">
     <div id="ticket-modal" class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all duration-300 scale-95 opacity-0" style="max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;">
         {{-- Modal Header --}}
         <div class="bg-gradient-to-r from-emerald-600 to-forest-700 px-6 py-4 flex items-center justify-between" style="flex-shrink: 0;">
@@ -113,7 +113,7 @@
 
 <script>
     // ── Ticket Detail Modal JavaScript Handler ──
-    function showTicketModal(ticketNo, name, destination, qty, paymentMethod, totalPrice, checkedInAt, status, community, purpose, campingDuration) {
+    function showTicketModal(ticketNo, name, destination, qty, paymentMethod, totalPrice, checkedInAt, status, community, purpose, campingDuration, leaderName, qtyMale, qtyFemale, qtyKids) {
         const overlay = document.getElementById('ticket-modal-overlay');
         const modal = document.getElementById('ticket-modal');
 
@@ -154,7 +154,21 @@
 
             addDetail('Pengunjung', name);
             addDetail('Destinasi', destination);
+            if (leaderName && leaderName !== name) {
+                addDetail('Penanggung Jawab', leaderName, true);
+            }
             addDetail('Jumlah Rombongan', qty + ' Orang');
+            // Gender/demografi
+            if (qtyMale !== undefined || qtyFemale !== undefined) {
+                const isSingle = (parseInt(qty)||1) === 1;
+                if (isSingle) {
+                    const genderLabel = parseInt(qtyMale) > 0 ? '<span class="text-blue-600">Laki-laki</span>' : '<span class="text-pink-600">Perempuan</span>';
+                    addDetail('Jenis Kelamin', genderLabel);
+                } else {
+                    const demoStr = '<span class="text-blue-600 font-bold">L: ' + (qtyMale||0) + '</span> &nbsp; <span class="text-pink-600 font-bold">P: ' + (qtyFemale||0) + '</span>' + (parseInt(qtyKids) > 0 ? ' &nbsp; <span class="text-amber-600 font-bold">A: ' + qtyKids + '</span>' : '');
+                    addDetail('Demografi', demoStr);
+                }
+            }
             addDetail('Metode Bayar', paymentMethod);
             addDetail('Total Bayar', '<span class="text-forest-700 font-extrabold">' + totalPrice + '</span>');
             addDetail('Waktu Masuk', checkedInAt);

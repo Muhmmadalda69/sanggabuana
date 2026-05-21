@@ -52,7 +52,7 @@
                         <div class="text-forest-200 text-sm">MDPL Ketinggian</div>
                     </div>
                     <div>
-                        <div class="text-3xl font-bold text-white mb-1"><span class="counter" data-target="50">0</span>k+</div>
+                        <div class="text-3xl font-bold text-white mb-1"><span class="counter" data-target="{{ $annualVisitors ?? 0 }}">0</span>+</div>
                         <div class="text-forest-200 text-sm">Pengunjung/Tahun</div>
                     </div>
                 </div>
