@@ -430,7 +430,6 @@
                         </span>
                         <select name="payment_method" id="payment-method" class="w-full pl-12 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all appearance-none cursor-pointer">
                             <option value="Tunai">Tunai / Cash</option>
-                            <option value="QRIS">QRIS / LinkAja/Gopay/OVO</option>
                             <option value="Transfer">Transfer Bank</option>
                         </select>
                         <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 pointer-events-none">

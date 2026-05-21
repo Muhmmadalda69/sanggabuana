@@ -8,6 +8,7 @@ use App\Models\Destination;
 use App\Models\Gallery;
 use App\Models\Testimonial;
 use App\Models\Visitor;
+use App\Models\VisitorAccount;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -398,7 +399,7 @@ class DashboardController extends Controller
                 'address_type' => 'required|string|in:lokal,indonesia,mancanegara',
                 'province' => 'required|string|max:255',
                 'city' => 'required|string|max:255',
-                'payment_method' => 'required|string|in:Tunai,QRIS,Transfer',
+                'payment_method' => 'required|string|in:Tunai,Transfer',
                 'price' => 'required|numeric|min:0',
             ];
 
@@ -459,8 +460,8 @@ class DashboardController extends Controller
                 'price' => (int) $request->input('price'),
                 'total_price' => (int) $request->input('price'),
                 'payment_method' => $request->input('payment_method'),
-                'status' => 'in',
-                'checked_in_at' => Carbon::now(),
+                'status' => $request->input('payment_method') === 'Tunai' ? 'in' : 'pending',
+                'checked_in_at' => $request->input('payment_method') === 'Tunai' ? Carbon::now() : null,
             ]);
             $createdTicketIds[] = $leaderVisitor->id;
 
@@ -514,11 +515,15 @@ class DashboardController extends Controller
                     'price' => $memberPrice,
                     'total_price' => $memberPrice,
                     'payment_method' => $request->input('payment_method'),
-                    'status' => 'in',
-                    'checked_in_at' => Carbon::now(),
+                    'status' => $request->input('payment_method') === 'Tunai' ? 'in' : 'pending',
+                    'checked_in_at' => $request->input('payment_method') === 'Tunai' ? Carbon::now() : null,
                 ]);
 
                 $createdTicketIds[] = $visitor->id;
+            }
+
+            if ($request->input('payment_method') === 'Transfer') {
+                return redirect()->route('payment.pay', $leaderVisitor->payment_token);
             }
 
             return redirect()->route('admin.pos.index')
@@ -540,7 +545,7 @@ class DashboardController extends Controller
             'qty_male' => 'required|integer|min:0',
             'qty_female' => 'required|integer|min:0',
             'qty_kids' => 'required|integer|min:0',
-            'payment_method' => 'required|string|in:Tunai,QRIS,Transfer',
+            'payment_method' => 'required|string|in:Tunai,Transfer',
             'price' => 'required|numeric|min:0',
             'avg_age' => 'required|integer|min:1|max:100',
         ];
@@ -604,9 +609,13 @@ class DashboardController extends Controller
             'price' => (int) $request->input('price'),
             'total_price' => (int) $request->input('price') * $qtyTotal,
             'payment_method' => $request->input('payment_method'),
-            'status' => 'in', // checked in by default when bought
-            'checked_in_at' => Carbon::now(),
+            'status' => $request->input('payment_method') === 'Tunai' ? 'in' : 'pending',
+            'checked_in_at' => $request->input('payment_method') === 'Tunai' ? Carbon::now() : null,
         ]);
+
+        if ($request->input('payment_method') === 'Transfer') {
+            return redirect()->route('payment.pay', $visitor->payment_token);
+        }
 
         return redirect()->route('admin.pos.index')
             ->with('success', 'Tiket ' . $ticketNo . ' berhasil diproses!')
@@ -818,5 +827,25 @@ class DashboardController extends Controller
             'total_testimonials' => Testimonial::count(),
             'recent_contacts' => $recentContacts,
         ]);
+    }
+
+    public function visitorAccountsIndex()
+    {
+        $accounts = VisitorAccount::orderBy('created_at', 'desc')->get();
+        return view('admin.visitor-accounts.index', compact('accounts'));
+    }
+
+    public function visitorAccountActivate(VisitorAccount $visitorAccount)
+    {
+        $visitorAccount->update(['status' => 'active']);
+        return redirect()->route('admin.visitor-accounts.index')
+            ->with('success', 'Akun ' . $visitorAccount->name . ' berhasil diaktifkan.');
+    }
+
+    public function visitorAccountBan(VisitorAccount $visitorAccount)
+    {
+        $visitorAccount->update(['status' => 'banned']);
+        return redirect()->route('admin.visitor-accounts.index')
+            ->with('success', 'Akun ' . $visitorAccount->name . ' telah dinonaktifkan.');
     }
 }

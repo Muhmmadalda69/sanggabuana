@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\VisitorAuthController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DestinationController;
@@ -29,6 +31,39 @@ Route::get('/destinasi/{slug}/kuota-bulan', [HomeController::class, 'quotaMonth'
 Route::post('/kontak', [HomeController::class, 'contact'])->name('contact.store');
 Route::get('/halaman/{slug}', [HomeController::class, 'page'])->name('page.show');
 Route::post('/ulasan', [HomeController::class, 'storeTestimonial'])->name('testimonials.store');
+
+/*
+|--------------------------------------------------------------------------
+| Visitor Auth Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('akun')->name('visitor.')->group(function () {
+    Route::get('/login', [VisitorAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [VisitorAuthController::class, 'login'])->name('login.post');
+    Route::get('/register', [VisitorAuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [VisitorAuthController::class, 'register'])->name('register.post');
+    Route::post('/logout', [VisitorAuthController::class, 'logout'])->name('logout');
+
+    Route::middleware('auth:visitor')->group(function () {
+        Route::get('/', [VisitorAuthController::class, 'dashboard'])->name('dashboard');
+        Route::get('/riwayat', [VisitorAuthController::class, 'riwayat'])->name('riwayat');
+        Route::get('/tiket-saya', [VisitorAuthController::class, 'tiketSaya'])->name('tiket-saya');
+        Route::get('/tiket/{groupId}', [VisitorAuthController::class, 'viewTiket'])->name('tiket-detail');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Payment Routes (Midtrans)
+|--------------------------------------------------------------------------
+*/
+Route::get('/payment/{paymentToken}/pay', [PaymentController::class, 'pay'])->name('payment.pay');
+Route::get('/payment/{paymentToken}/finish', [PaymentController::class, 'finish'])->name('payment.finish');
+Route::get('/payment/{paymentToken}/success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/{paymentToken}/status', [PaymentController::class, 'status'])->name('payment.status');
+Route::post('/payment/{paymentToken}/change-method', [PaymentController::class, 'changeMethod'])->name('payment.change-method');
+Route::post('/payment/{paymentToken}/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+Route::post('/payment/notification', [PaymentController::class, 'notificationHandler'])->name('payment.notification');
 
 /*
 |--------------------------------------------------------------------------
@@ -79,5 +114,12 @@ Route::prefix('admin')->name('admin.')->middleware(AdminAuth::class)->group(func
     // RBAC routes - only accessible by superadmin role
     Route::middleware('superadmin')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
+    });
+
+    // Visitor Accounts Management - admin & superadmin
+    Route::middleware('admin_or_superadmin')->group(function () {
+        Route::get('/visitor-accounts', [DashboardController::class, 'visitorAccountsIndex'])->name('visitor-accounts.index');
+        Route::post('/visitor-accounts/{visitorAccount}/activate', [DashboardController::class, 'visitorAccountActivate'])->name('visitor-accounts.activate');
+        Route::post('/visitor-accounts/{visitorAccount}/ban', [DashboardController::class, 'visitorAccountBan'])->name('visitor-accounts.ban');
     });
 });

@@ -39,14 +39,49 @@
 
                 {{-- Desktop Menu --}}
                 <div class="hidden md:flex items-center gap-1">
-                    <a href="#beranda" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Beranda</a>
-                    <a href="#destinasi" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Destinasi</a>
-                    <a href="#tentang" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Tentang</a>
-                    <a href="#galeri" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Galeri</a>
-                    <a href="#testimoni" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Testimoni</a>
-                    <a href="#kontak" class="ml-2 px-5 py-2.5 bg-gradient-to-r from-forest-500 to-forest-600 text-white text-sm font-semibold rounded-xl hover:from-forest-400 hover:to-forest-500 transition-all shadow-lg hover:shadow-forest-500/30 btn-glow">
+                    <a href="{{ route('home') }}#beranda" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Beranda</a>
+                    <a href="{{ route('home') }}#destinasi" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Destinasi</a>
+                    <a href="{{ route('home') }}#tentang" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Tentang</a>
+                    <a href="{{ route('home') }}#galeri" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Galeri</a>
+                    <a href="{{ route('home') }}#testimoni" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Testimoni</a>
+                    <a href="{{ route('home') }}#kontak" class="px-4 py-2 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">
+                    {{-- <a href="{{ route('home') }}#testimoni" class="ml-2 px-5 py-2.5 bg-gradient-to-r from-forest-500 to-forest-600 text-white text-sm font-semibold rounded-xl hover:from-forest-400 hover:to-forest-500 transition-all shadow-lg hover:shadow-forest-500/30 btn-glow"> --}}
                         Hubungi Kami
                     </a>
+                    {{-- Visitor Account --}}
+                    @auth('visitor')
+                    <div class="relative ml-2 group">
+                        <button class="flex items-center gap-2 px-4 py-2 text-white bg-white/10 hover:bg-white/20 text-sm font-semibold rounded-xl transition-all">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            <span>{{ Auth::guard('visitor')->user()->name }}</span>
+                            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 z-50">
+                            <a href="{{ route('visitor.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-forest-50 transition-colors">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4 text-forest-600"></i>
+                                Dashboard
+                            </a>
+                            <a href="{{ route('visitor.riwayat') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-forest-50 transition-colors">
+                                <i data-lucide="receipt" class="w-4 h-4 text-forest-600"></i>
+                                Riwayat Transaksi
+                            </a>
+                            <a href="{{ route('visitor.tiket-saya') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-forest-50 transition-colors">
+                                <i data-lucide="ticket" class="w-4 h-4 text-forest-600"></i>
+                                Tiket Saya
+                            </a>
+                            <hr class="my-2 border-gray-100">
+                            <form method="POST" action="{{ route('visitor.logout') }}">
+                                @csrf
+                                <button type="submit" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                                    Keluar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @else
+                    <a href="{{ route('visitor.login') }}" class="ml-2 px-5 py-2.5 bg-gradient-to-r from-forest-500 to-forest-600 text-white text-sm font-semibold rounded-xl hover:from-forest-400 hover:to-forest-500 transition-all shadow-lg hover:shadow-forest-500/30 btn-glow">Masuk</a>
+                    @endauth
                 </div>
 
                 {{-- Mobile Menu Button --}}
@@ -58,12 +93,39 @@
             {{-- Mobile Menu --}}
             <div id="mobile-menu" class="hidden md:hidden pb-4">
                 <div class="glass-card rounded-2xl p-4 mt-2 mobile-menu-enter">
-                    <a href="#beranda" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Beranda</a>
-                    <a href="#destinasi" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Destinasi</a>
-                    <a href="#tentang" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Tentang</a>
-                    <a href="#galeri" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Galeri</a>
-                    <a href="#testimoni" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Testimoni</a>
-                    <a href="#kontak" class="block mt-2 px-5 py-3 bg-gradient-to-r from-forest-500 to-forest-600 text-white text-sm font-semibold rounded-xl text-center">Hubungi Kami</a>
+                    <a href="{{ route('home') }}#beranda" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Beranda</a>
+                    <a href="{{ route('home') }}#destinasi" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Destinasi</a>
+                    <a href="{{ route('home') }}#tentang" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Tentang</a>
+                    <a href="{{ route('home') }}#galeri" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Galeri</a>
+                    <a href="{{ route('home') }}#testimoni" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">Testimoni</a>
+                    <a href="#kontak" class="block mb-3 px-5 py-3 bg-gradient-to-r from-forest-500 to-forest-600 text-white text-sm font-semibold rounded-xl text-center">Hubungi Kami</a>
+                    <hr class="border-white/10 mb-3">
+                    @auth('visitor')
+                    <div class="text-white/60 text-xs uppercase tracking-wider px-4 mb-2">Akun</div>
+                    <a href="{{ route('visitor.dashboard') }}" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-2"></i>Dashboard
+                    </a>
+                    <a href="{{ route('visitor.riwayat') }}" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">
+                        <i data-lucide="receipt" class="w-4 h-4 inline mr-2"></i>Riwayat Transaksi
+                    </a>
+                    <a href="{{ route('visitor.tiket-saya') }}" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">
+                        <i data-lucide="ticket" class="w-4 h-4 inline mr-2"></i>Tiket Saya
+                    </a>
+                    <form method="POST" action="{{ route('visitor.logout') }}" class="mt-2">
+                        @csrf
+                        <button type="submit" class="block w-full px-4 py-3 text-red-300 hover:text-red-200 text-sm font-medium rounded-lg hover:bg-white/10 transition-all text-left">
+                            <i data-lucide="log-out" class="w-4 h-4 inline mr-2"></i>Keluar
+                        </button>
+                    </form>
+                    @else
+                    <div class="text-white/60 text-xs uppercase tracking-wider px-4 mb-2">Akun</div>
+                    <a href="{{ route('visitor.login') }}" class="block px-4 py-3 text-white/80 hover:text-white text-sm font-medium rounded-lg hover:bg-white/10 transition-all">
+                        <i data-lucide="log-in" class="w-4 h-4 inline mr-2"></i>Masuk
+                    </a>
+                    <a href="{{ route('visitor.register') }}" class="block mt-2 px-5 py-3 bg-white text-forest-800 text-sm font-semibold rounded-xl text-center hover:bg-forest-50 transition-all">
+                        Daftar
+                    </a>
+                    @endauth
                 </div>
             </div>
         </div>
@@ -248,6 +310,20 @@
         }, { threshold: 0.5 });
 
         document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+    </script>
+
+    {{-- SweetAlert2 for flash messages --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        @if(session('success'))
+            Swal.fire({ icon: 'success', title: 'Berhasil!', text: '{{ session('success') }}', confirmButtonColor: '#15803d' });
+        @endif
+        @if(session('error'))
+            Swal.fire({ icon: 'error', title: 'Oops!', text: '{{ session('error') }}', confirmButtonColor: '#dc2626' });
+        @endif
+        @if(session('info'))
+            Swal.fire({ icon: 'info', title: 'Informasi', text: '{{ session('info') }}', confirmButtonColor: '#15803d' });
+        @endif
     </script>
     @stack('scripts')
 </body>

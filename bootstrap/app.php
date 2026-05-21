@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'superadmin' => \App\Http\Middleware\SuperadminAuth::class,
             'admin_or_superadmin' => \App\Http\Middleware\AdminOrSuperadmin::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'payment/notification',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

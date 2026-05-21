@@ -30,12 +30,6 @@
             </div>
         </div>
 
-        @if(session('error'))
-            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2">
-                <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i> {{ session('error') }}
-            </div>
-        @endif
-
         {{-- Date Picker Card --}}
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-forest-100">
             <h2 class="text-base font-bold text-gray-800 mb-1 flex items-center gap-2">
@@ -243,5 +237,19 @@ document.getElementById('next-month').addEventListener('click', () => {
 // Init — prefetch current month immediately
 const t = today();
 renderCalendar(t.getFullYear(), t.getMonth());
+
+@if (session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: "{{ session('error') }}",
+        confirmButtonColor: '#059669',
+        background: '#ffffff',
+        customClass: {
+            popup: 'rounded-2xl shadow-xl border border-gray-100',
+            confirmButton: 'px-6 py-2.5 bg-forest-600 hover:bg-forest-750 rounded-xl font-bold text-sm text-white'
+        }
+    });
+@endif
 </script>
 @endpush

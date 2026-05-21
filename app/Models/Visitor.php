@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Visitor extends Model
 {
     protected $fillable = [
+        'visitor_account_id',
         'destination_id',
         'group_id',
         'visit_date',
@@ -30,6 +32,12 @@ class Visitor extends Model
         'price',
         'total_price',
         'payment_method',
+        'payment_token',
+        'transaction_id',
+        'payment_status',
+        'payment_details',
+        'snap_token',
+        'payment_settlement_at',
         'status',
         'checked_in_at',
         'checked_out_at',
@@ -38,7 +46,19 @@ class Visitor extends Model
     protected $casts = [
         'checked_in_at' => 'datetime',
         'checked_out_at' => 'datetime',
+        'payment_settlement_at' => 'datetime',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($visitor) {
+            if (empty($visitor->payment_token)) {
+                $visitor->payment_token = (string) Str::uuid();
+            }
+        });
+    }
 
     public function destination(): BelongsTo
     {

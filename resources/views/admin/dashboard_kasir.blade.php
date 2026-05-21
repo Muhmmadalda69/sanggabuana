@@ -80,7 +80,6 @@
                 <label for="payment-method" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Metode Pembayaran</label>
                 <select id="payment-method" class="w-full h-10 border border-gray-200 rounded-xl px-3 text-sm focus:outline-none focus:border-forest-500 cursor-pointer">
                     <option value="Tunai">Tunai / Cash</option>
-                    <option value="QRIS">QRIS / LinkAja/Gopay</option>
                     <option value="Transfer">Transfer Bank</option>
                 </select>
             </div>

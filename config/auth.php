@@ -42,6 +42,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'visitor' => [
+            'driver' => 'session',
+            'provider' => 'visitors',
+        ],
     ],
 
     /*
@@ -67,10 +72,10 @@ return [
             'model' => env('AUTH_MODEL', User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'visitors' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\VisitorAccount::class,
+        ],
     ],
 
     /*

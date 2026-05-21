@@ -6,10 +6,12 @@ use App\Models\Contact;
 use App\Models\Destination;
 use App\Models\Gallery;
 use App\Models\Page;
+use App\Models\PendingRegistration;
 use App\Models\Setting;
 use App\Models\Testimonial;
 use App\Models\Visitor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class HomeController extends Controller
@@ -97,6 +99,12 @@ class HomeController extends Controller
         if (!$destination->has_online_registration) {
             abort(403, 'Registrasi online tidak diaktifkan untuk destinasi ini.');
         }
+        // Visitor must be logged in
+        if (!Auth::guard('visitor')->check()) {
+            session(['url.intended' => url()->current()]);
+            return redirect()->route('visitor.login')
+                ->with('info', 'Silakan login atau daftar akun terlebih dahulu untuk melakukan registrasi online.');
+        }
         return view('destination-register-date', compact('destination'));
     }
 
@@ -162,6 +170,13 @@ class HomeController extends Controller
             abort(403, 'Registrasi online tidak diaktifkan untuk destinasi ini.');
         }
 
+        // Visitor must be logged in
+        if (!Auth::guard('visitor')->check()) {
+            session(['url.intended' => url()->current()]);
+            return redirect()->route('visitor.login')
+                ->with('info', 'Silakan login atau daftar akun terlebih dahulu untuk melakukan registrasi online.');
+        }
+
         // Validate date
         try {
             $visitDate = Carbon::createFromFormat('Y-m-d', $date);
@@ -200,18 +215,7 @@ class HomeController extends Controller
             return redirect()->route('destination.register.date', $slug)->with('error', 'Tanggal tidak valid.');
         }
 
-        // Check quota again before storing
-        if ($destination->daily_quota) {
-            $booked = Visitor::where('destination_id', $destination->id)
-                ->where('visit_date', $visitDate)
-                ->whereIn('status', ['pending', 'in'])
-                ->sum('qty_total');
-            if ($booked >= $destination->daily_quota) {
-                return redirect()->route('destination.register.date', $slug)->with('error', 'Kuota untuk tanggal ini sudah penuh.');
-            }
-        }
-
-        // Build validation rules similar to POS
+        // Build validation rules
         if ($destination->has_member_details) {
             $rules = [
                 'name' => 'required|string|max:255',
@@ -228,7 +232,7 @@ class HomeController extends Controller
                 'address_type' => 'required|string|in:lokal,indonesia,mancanegara',
                 'province' => 'required|string|max:255',
                 'city' => 'required|string|max:255',
-                'payment_method' => 'required|string|in:Tunai,QRIS,Transfer',
+                'payment_method' => 'required|string|in:Tunai,Transfer',
             ];
 
             if ($destination->has_purpose) {
@@ -241,109 +245,64 @@ class HomeController extends Controller
             $request->validate($rules);
 
             $members = $request->input('members');
-            $createdTicketIds = [];
+            $requestedQty = 1 + count($members ?? []);
 
-            $groupId = 'GRP-' . Carbon::now()->format('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
-            $todayStr = Carbon::now()->format('Ymd');
-            $maxTicket = Visitor::whereDate('created_at', Carbon::today())
-                ->where('ticket_no', 'like', 'TKT-' . $todayStr . '-%')
-                ->max('ticket_no');
-            $ticketCounter = $maxTicket ? (int) substr($maxTicket, -4) : 0;
-
-            // Leader ticket
-            $leaderAge = (int) $request->input('leader_age');
-            $leaderGender = $request->input('leader_gender');
-            $leaderTicketNo = 'TKT-' . $todayStr . '-' . str_pad(++$ticketCounter, 4, '0', STR_PAD_LEFT);
-            $leaderQtyMale = 0; $leaderQtyFemale = 0; $leaderQtyKids = 0;
-            if ($leaderAge < 5) { $leaderQtyKids = 1; }
-            elseif ($leaderGender === 'L') { $leaderQtyMale = 1; }
-            else { $leaderQtyFemale = 1; }
-
-            $leaderVisitor = Visitor::create([
-                'destination_id' => $destination->id,
-                'group_id' => $groupId,
-                'visit_date' => $visitDate,
-                'ticket_no' => $leaderTicketNo,
-                'name' => $request->input('name'),
-                'email' => $request->input('leader_email'),
-                'age' => $leaderAge,
-                'address' => $request->input('leader_address') . ', ' . $request->input('city') . ', ' . $request->input('province'),
-                'address_type' => $request->input('address_type'),
-                'city' => $request->input('city'),
-                'province' => $request->input('province'),
-                'community' => $request->input('community'),
-                'purpose' => $destination->has_purpose ? $request->input('purpose') : 'Normal',
-                'camping_duration' => ($destination->has_purpose && $request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null,
-                'qty_male' => $leaderQtyMale,
-                'qty_female' => $leaderQtyFemale,
-                'qty_kids' => $leaderQtyKids,
-                'qty_total' => 1,
-                'avg_age' => $leaderAge,
-                'price' => $destination->price,
-                'total_price' => $destination->price,
-                'payment_method' => $request->input('payment_method'),
-                'status' => 'pending',
-                'checked_in_at' => null,
-            ]);
-            $createdTicketIds[] = $leaderVisitor->id;
-
-            foreach ($members ?? [] as $index => $member) {
-                $ticketNo = 'TKT-' . $todayStr . '-' . str_pad(++$ticketCounter, 4, '0', STR_PAD_LEFT);
-
-                $qtyMale = 0;
-                $qtyFemale = 0;
-                $qtyKids = 0;
-
-                $age = (int) $member['age'];
-                $isChild = !empty($member['is_child']) && $member['is_child'] == '1';
-
-                if ($isChild) {
-                    $qtyKids = 1;
-                } elseif ($member['gender'] === 'L') {
-                    $qtyMale = 1;
-                } else {
-                    $qtyFemale = 1;
+            // Check quota
+            if ($destination->daily_quota) {
+                $booked = Visitor::where('destination_id', $destination->id)
+                    ->where('visit_date', $visitDate)
+                    ->whereIn('status', ['pending', 'in'])
+                    ->sum('qty_total');
+                if (($booked + $requestedQty) > $destination->daily_quota) {
+                    $remaining = max(0, $destination->daily_quota - $booked);
+                    return redirect()->route('destination.register.date', $slug)
+                        ->with('error', "Kuota tersisa {$remaining} orang, tidak cukup untuk {$requestedQty} orang.");
                 }
+            }
 
+            $totalAmount = $destination->price;
+            $items = [
+                [
+                    'name' => $request->input('name'),
+                    'price' => (int) $destination->price,
+                    'quantity' => 1,
+                ]
+            ];
+            foreach ($members ?? [] as $member) {
+                $isChild = !empty($member['is_child']) && $member['is_child'] == '1';
                 $memberPrice = $isChild && $destination->kids_discount
                     ? (int) round($destination->price * (1 - $destination->kids_discount / 100))
                     : (int) $destination->price;
-
-                $combinedAddress = $member['address'] . ', ' . ($member['city'] ?? $request->input('city')) . ', ' . ($member['province'] ?? $request->input('province'));
-
-                $visitor = Visitor::create([
-                    'destination_id' => $destination->id,
-                    'group_id' => $groupId,
-                    'visit_date' => $visitDate,
-                    'ticket_no' => $ticketNo,
+                $totalAmount += $memberPrice;
+                $items[] = [
                     'name' => $member['name'],
-                    'email' => $member['email'] ?? null,
-                    'age' => $age,
-                    'address' => $combinedAddress,
-                    'address_type' => $member['address_type'] ?? $request->input('address_type'),
-                    'city' => $member['city'] ?? $request->input('city'),
-                    'province' => $member['province'] ?? $request->input('province'),
-                    'community' => $request->input('community'),
-                    'purpose' => $destination->has_purpose ? $request->input('purpose') : 'Normal',
-                    'camping_duration' => ($destination->has_purpose && $request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null,
-                    'qty_male' => $qtyMale,
-                    'qty_female' => $qtyFemale,
-                    'qty_kids' => $qtyKids,
-                    'qty_total' => 1,
-                    'avg_age' => $age,
                     'price' => $memberPrice,
-                    'total_price' => $memberPrice,
-                    'payment_method' => $request->input('payment_method'),
-                    'status' => 'pending',
-                    'checked_in_at' => null,
-                ]);
-
-                $createdTicketIds[] = $visitor->id;
+                    'quantity' => 1,
+                ];
             }
 
-            return redirect()->route('destination.register', [$slug, $visitDate])
-                ->with('success', 'Registrasi online berhasil! Silakan simpan detail tiket Anda di bawah.')
-                ->with('print_ticket_ids', $createdTicketIds);
+            $formData = [
+                'has_member_details' => true,
+                'leader' => [
+                    'name' => $request->input('name'),
+                    'email' => $request->input('leader_email'),
+                    'age' => (int) $request->input('leader_age'),
+                    'gender' => $request->input('leader_gender'),
+                    'address' => $request->input('leader_address'),
+                    'address_type' => $request->input('address_type'),
+                    'province' => $request->input('province'),
+                    'city' => $request->input('city'),
+                    'community' => $request->input('community'),
+                ],
+                'members' => $members ?? [],
+                'items' => $items,
+                'total_amount' => $totalAmount,
+            ];
+
+            if ($destination->has_purpose) {
+                $formData['leader']['purpose'] = $request->input('purpose');
+                $formData['leader']['camping_duration'] = ($request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null;
+            }
         } else {
             $rules = [
                 'name' => 'required|string|max:255',
@@ -357,7 +316,7 @@ class HomeController extends Controller
                 'qty_male' => 'required|integer|min:0',
                 'qty_female' => 'required|integer|min:0',
                 'qty_kids' => 'required|integer|min:0',
-                'payment_method' => 'required|string|in:Tunai,QRIS,Transfer',
+                'payment_method' => 'required|string|in:Tunai,Transfer',
                 'avg_age' => 'required|integer|min:1|max:100',
             ];
 
@@ -383,45 +342,58 @@ class HomeController extends Controller
 
             $qtyTotal = $qtyMale + $qtyFemale + $qtyKids;
 
-            $todayStr = Carbon::now()->format('Ymd');
-            $maxTicket = Visitor::whereDate('created_at', Carbon::today())
-                ->where('ticket_no', 'like', 'TKT-' . $todayStr . '-%')
-                ->max('ticket_no');
-            $seq = $maxTicket ? (int) substr($maxTicket, -4) : 0;
-            $ticketNo = 'TKT-' . $todayStr . '-' . str_pad($seq + 1, 4, '0', STR_PAD_LEFT);
+            // Check quota
+            if ($destination->daily_quota) {
+                $booked = Visitor::where('destination_id', $destination->id)
+                    ->where('visit_date', $visitDate)
+                    ->whereIn('status', ['pending', 'in'])
+                    ->sum('qty_total');
+                if (($booked + $qtyTotal) > $destination->daily_quota) {
+                    $remaining = max(0, $destination->daily_quota - $booked);
+                    return redirect()->route('destination.register.date', $slug)
+                        ->with('error', "Kuota tersisa {$remaining} orang, tidak cukup untuk {$qtyTotal} orang.");
+                }
+            }
 
-            $combinedAddress = $request->input('leader_address') . ', ' . $request->input('city') . ', ' . $request->input('province');
+            $totalAmount = $destination->price * $qtyTotal;
 
-            $visitor = Visitor::create([
-                'destination_id' => $destination->id,
-                'group_id' => $ticketNo,
-                'visit_date' => $visitDate,
-                'ticket_no' => $ticketNo,
-                'name' => $request->input('name'),
-                'email' => $request->input('leader_email'),
-                'age' => $request->input('leader_age'),
-                'address' => $combinedAddress,
-                'address_type' => $request->input('address_type'),
-                'city' => $request->input('city'),
-                'province' => $request->input('province'),
-                'community' => $request->input('community'),
-                'purpose' => $destination->has_purpose ? $request->input('purpose') : 'Normal',
-                'camping_duration' => ($destination->has_purpose && $request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null,
+            $formData = [
+                'has_member_details' => false,
+                'leader' => [
+                    'name' => $request->input('name'),
+                    'email' => $request->input('leader_email'),
+                    'age' => (int) $request->input('leader_age'),
+                    'gender' => $leaderGender,
+                    'address' => $request->input('leader_address'),
+                    'address_type' => $request->input('address_type'),
+                    'province' => $request->input('province'),
+                    'city' => $request->input('city'),
+                    'community' => $request->input('community'),
+                    'avg_age' => (int) $request->input('avg_age'),
+                ],
                 'qty_male' => $qtyMale,
                 'qty_female' => $qtyFemale,
                 'qty_kids' => $qtyKids,
                 'qty_total' => $qtyTotal,
-                'avg_age' => $request->input('avg_age'),
-                'price' => $destination->price,
-                'total_price' => $destination->price * $qtyTotal,
-                'payment_method' => $request->input('payment_method'),
-                'status' => 'pending',
-                'checked_in_at' => null,
-            ]);
+                'total_amount' => $totalAmount,
+            ];
 
-            return redirect()->route('destination.register', [$slug, $visitDate])
-                ->with('success', 'Registrasi online berhasil! Silakan simpan detail tiket Anda di bawah.')
-                ->with('print_ticket_id', $visitor->id);
+            if ($destination->has_purpose) {
+                $formData['leader']['purpose'] = $request->input('purpose');
+                $formData['leader']['camping_duration'] = ($request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null;
+            }
         }
+
+        // Save to pending_registrations
+        $pending = PendingRegistration::create([
+            'visitor_account_id' => Auth::guard('visitor')->id(),
+            'destination_id' => $destination->id,
+            'slug' => $slug,
+            'visit_date' => $visitDate,
+            'form_data' => $formData,
+            'payment_method' => $request->input('payment_method'),
+        ]);
+
+        return redirect()->route('payment.pay', $pending->temp_token);
     }
 }

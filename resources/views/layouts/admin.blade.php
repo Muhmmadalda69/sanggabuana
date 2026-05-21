@@ -127,6 +127,19 @@
                             <i data-lucide="shield-check" class="w-5 h-5"></i> Kelola Pengguna
                         </a>
                     @endif
+
+                    {{-- Visitor Accounts -- visible to admin/superadmin --}}
+                    @if(Auth::user()->isAdmin() || Auth::user()->isSuperAdmin())
+                    <a href="{{ route('admin.visitor-accounts.index') }}" class="admin-sidebar-link flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.visitor-accounts.*') ? 'active' : '' }}">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="users" class="w-5 h-5"></i> Akun Pengunjung
+                        </div>
+                        @php $pendingAccounts = App\Models\VisitorAccount::where('status', 'pending')->count(); @endphp
+                        @if($pendingAccounts > 0)
+                            <span class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $pendingAccounts }}</span>
+                        @endif
+                    </a>
+                    @endif
                 @endif
             </div>
             
