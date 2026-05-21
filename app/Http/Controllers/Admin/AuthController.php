@@ -25,10 +25,6 @@ class AuthController extends Controller
                     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
                 }
 
-                if (\App\Models\Visitor::count() === 0) {
-                    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-                }
-
                 if (\App\Models\User::count() === 0) {
                     \App\Models\User::create([
                         'name' => 'Super Administrator',

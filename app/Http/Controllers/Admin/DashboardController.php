@@ -27,10 +27,6 @@ class DashboardController extends Controller
             if (!\Illuminate\Support\Facades\Schema::hasTable('visitors')) {
                 \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
             }
-
-            if (\App\Models\Visitor::count() === 0) {
-                \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-            }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning('Database setup check skipped or failed: ' . $e->getMessage());
         }
