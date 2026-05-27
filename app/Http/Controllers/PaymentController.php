@@ -54,6 +54,8 @@ class PaymentController extends Controller
         );
 
         $items = [];
+        $ticketTotal = (int) $pending->form_data['total_amount'];
+
         if (!empty($pending->form_data['items'])) {
             foreach ($pending->form_data['items'] as $i => $item) {
                 $items[] = [
@@ -67,13 +69,25 @@ class PaymentController extends Controller
             // Non-member-details: single ticket
             $items[] = [
                 'id' => 'TICKET',
-                'price' => (int) $pending->form_data['total_amount'],
+                'price' => $ticketTotal,
                 'quantity' => 1,
                 'name' => 'Tiket ' . ($pending->form_data['leader']['name'] ?? '') . ' (' . $pending->destination->name . ')',
             ];
         }
 
-        $transaction = $this->midtrans->buildTransactionDetails($orderId, $pending->form_data['total_amount'], $items);
+        // Calculate 2% admin fee (matching frontend calculation)
+        $adminFee = (int) round($ticketTotal * 0.02);
+        $grossAmount = $ticketTotal + $adminFee;
+
+        // Add admin fee as a separate line item
+        $items[] = [
+            'id' => 'ADMIN-FEE',
+            'price' => $adminFee,
+            'quantity' => 1,
+            'name' => 'Biaya Admin QRIS (2%)',
+        ];
+
+        $transaction = $this->midtrans->buildTransactionDetails($orderId, $grossAmount, $items);
         $transaction['customer_details'] = $customerDetails;
         $transaction['callbacks'] = [
             'finish' => route('payment.finish', $pending->temp_token),

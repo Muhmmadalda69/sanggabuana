@@ -20,7 +20,12 @@
                 <i data-lucide="receipt" class="w-5 h-5 text-forest-600"></i> Ringkasan Pesanan
             </h3>
             <div class="divide-y divide-gray-100">
-                @php $items = $pending->form_data['items'] ?? []; @endphp
+                @php
+                    $items = $pending->form_data['items'] ?? [];
+                    $ticketTotal = (int) ($pending->form_data['total_amount'] ?? 0);
+                    $adminFee = (int) round($ticketTotal * 0.02);
+                    $grandTotal = $ticketTotal + $adminFee;
+                @endphp
                 @forelse($items as $item)
                 <div class="py-3 flex items-center justify-between">
                     <div>
@@ -31,13 +36,23 @@
                 @empty
                 <div class="py-3 flex items-center justify-between">
                     <div class="font-semibold text-gray-800 text-sm">{{ $pending->form_data['leader']['name'] ?? 'Tiket' }}</div>
-                    <div class="text-sm font-bold text-forest-700">Rp {{ number_format($pending->form_data['total_amount'] ?? 0, 0, ',', '.') }}</div>
+                    <div class="text-sm font-bold text-forest-700">Rp {{ number_format($ticketTotal, 0, ',', '.') }}</div>
                 </div>
                 @endforelse
             </div>
+            <div class="mt-3 pt-3 border-t border-gray-100">
+                <div class="flex justify-between items-center text-sm text-gray-600 mb-1">
+                    <span>Subtotal Tiket</span>
+                    <span class="font-semibold">Rp {{ number_format($ticketTotal, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm text-gray-600 mb-1">
+                    <span>Biaya Admin QRIS (2%)</span>
+                    <span class="font-semibold">Rp {{ number_format($adminFee, 0, ',', '.') }}</span>
+                </div>
+            </div>
             <div class="mt-4 pt-4 border-t-2 border-dashed border-gray-200 flex justify-between items-center">
                 <span class="text-base font-bold text-gray-800">Total Pembayaran</span>
-                <span class="text-xl font-black text-forest-700">Rp {{ number_format($pending->form_data['total_amount'] ?? 0, 0, ',', '.') }}</span>
+                <span class="text-xl font-black text-forest-700">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
             </div>
         </div>
 

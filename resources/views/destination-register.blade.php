@@ -489,7 +489,7 @@
                                         </span>
                                         <select name="payment_method" id="payment-method"
                                             class="w-full pl-12 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all appearance-none cursor-pointer">
-                                            <option value="Transfer">Transfer / QRIS</option>
+                                            <option value="Transfer">QRIS (Midtrans)</option>
                                         </select>
                                         <span
                                             class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 pointer-events-none">
@@ -516,17 +516,27 @@
                             </div>
 
                             {{-- Total Pay Summary and Submit --}}
-                            <div
-                                class="mt-8 pt-6 border-t border-forest-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div class="text-center sm:text-left">
-                                    <span class="text-xs text-forest-500 font-medium">Estimasi Pembayaran</span>
-                                    <h3 class="text-2xl font-black text-forest-900 tracking-tight" id="pos-total-pay">Rp 0
-                                    </h3>
+                            <div class="mt-8 pt-6 border-t border-forest-50 space-y-4">
+                                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-2.5">
+                                    <div class="flex justify-between text-xs text-gray-500">
+                                        <span>Total Harga Tiket:</span>
+                                        <span class="font-bold text-gray-800" id="raw-total-tickets">Rp 0</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-gray-500">
+                                        <span>Biaya Admin QRIS (2%):</span>
+                                        <span class="font-bold text-gray-800" id="admin-fee-amount">Rp 0</span>
+                                    </div>
                                 </div>
-                                <button type="submit"
-                                    class="w-full sm:w-auto px-8 py-3.5 bg-forest-600 hover:bg-forest-750 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-forest-500/20 flex items-center justify-center gap-2">
-                                    <i data-lucide="credit-card" class="w-5 h-5"></i> Proses Registrasi & Bayar
-                                </button>
+                                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div class="text-center sm:text-left">
+                                        <span class="text-xs text-forest-500 font-medium">Estimasi Pembayaran (Total)</span>
+                                        <h3 class="text-2xl font-black text-forest-900 tracking-tight" id="pos-total-pay">Rp 0</h3>
+                                    </div>
+                                    <button type="submit"
+                                        class="w-full sm:w-auto px-8 py-3.5 bg-forest-600 hover:bg-forest-750 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-forest-500/20 flex items-center justify-center gap-2">
+                                        <i data-lucide="credit-card" class="w-5 h-5"></i> Proses Registrasi & Bayar
+                                    </button>
+                                </div>
                             </div>
 
                         </form>
@@ -734,33 +744,42 @@
                 let qty = 1;
                 const kidsDiscount = {{ $destination->kids_discount ?? 0 }};
                 const kidsPrice = kidsDiscount > 0 ? Math.round(basePrice * (1 - kidsDiscount / 100)) : basePrice;
+                let ticketTotal = 0;
 
                 const hasMemberDetails = {{ $destination->has_member_details ? 'true' : 'false' }};
                 if (hasMemberDetails) {
                     const rows = document.querySelectorAll('.member-row');
                     qty = rows.length + 1;
-                    let total = basePrice; // leader full price
+                    ticketTotal = basePrice; // leader full price
                     rows.forEach(row => {
                         const isChild = row.querySelector('select[name*="[is_child]"]')?.value === '1';
-                        total += isChild ? kidsPrice : basePrice;
+                        ticketTotal += isChild ? kidsPrice : basePrice;
                     });
                     if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
                     const calcBadge = document.getElementById('gunung-calc-total-badge');
                     if (calcBadge) calcBadge.innerText = qty;
-                    posTotalPay.innerText = formatRupiah(total);
-                    return;
                 } else {
                     const male = qtyMaleInput ? (parseInt(qtyMaleInput.value) || 0) : 0;
                     const female = qtyFemaleInput ? (parseInt(qtyFemaleInput.value) || 0) : 0;
                     const kids = qtyKidsInput ? (parseInt(qtyKidsInput.value) || 0) : 0;
                     qty = male + female + kids + 1;
-                    const total = (male + female + 1) * basePrice + kids * kidsPrice;
+                    ticketTotal = (male + female + 1) * basePrice + kids * kidsPrice;
                     if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
                     const calcBadge = document.getElementById('gunung-calc-total-badge');
                     if (calcBadge) calcBadge.innerText = qty;
-                    posTotalPay.innerText = formatRupiah(total);
-                    return;
                 }
+
+                // Calculate 2% Admin Fee
+                const adminFee = Math.round(ticketTotal * 0.02);
+                const finalTotal = ticketTotal + adminFee;
+
+                const rawTotalEl = document.getElementById('raw-total-tickets');
+                if (rawTotalEl) rawTotalEl.innerText = formatRupiah(ticketTotal);
+
+                const adminFeeEl = document.getElementById('admin-fee-amount');
+                if (adminFeeEl) adminFeeEl.innerText = formatRupiah(adminFee);
+
+                posTotalPay.innerText = formatRupiah(finalTotal);
             }
             // Expose to global so the member_row_js partial can call it
             window.calculatePOS = calculatePOS;

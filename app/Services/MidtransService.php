@@ -100,6 +100,7 @@ class MidtransService
                 'gross_amount' => $grossAmount,
             ],
             'item_details' => $items,
+            'enabled_payments' => ['gopay'],
         ];
     }
 }
