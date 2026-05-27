@@ -3,7 +3,7 @@
 @section('content')
 
 {{-- Hero Section --}}
-<section id="beranda" class="relative min-h-screen flex items-center py-20 overflow-hidden">
+<section id="beranda" class="relative w-full min-h-screen flex items-center py-20 overflow-hidden">
     {{-- Background Image & Gradient --}}
     <div class="absolute inset-0 z-0">
         <img src="{{ App\Models\Setting::get('hero_background', 'https://images.unsplash.com/photo-1542224566-6e85f2e6772f?q=80&w=2000&auto=format&fit=crop') }}" alt="Gunung Sanggabuana" class="w-full h-full object-cover animate-float-slow transform scale-105">
@@ -16,7 +16,7 @@
         <div class="absolute bottom-1/4 right-10 w-48 h-48 bg-forest-300/20 rounded-full blur-3xl"></div>
     </div>
 
-    <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative z-10 w-full px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <div class="scroll-animate text-center lg:text-left">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card text-forest-100 text-sm font-medium mb-6">
@@ -116,7 +116,7 @@
 
 {{-- Tentang Section --}}
 <section id="tentang" class="py-24 bg-forest-50 relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="grid md:grid-cols-2 gap-16 items-center">
             <div class="relative scroll-animate w-full rounded-[2rem] overflow-hidden shadow-2xl bg-forest-950 border-4 border-white/80 group" style="height: 380px;">
                 {{-- Cover Poster Image --}}
@@ -188,7 +188,7 @@
 
 {{-- Featured Destinations --}}
 <section id="destinasi" class="py-24 bg-white relative">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16 scroll-animate">
             <div class="text-forest-600 font-bold uppercase tracking-wider text-sm mb-2 flex items-center justify-center gap-2">
                 <i data-lucide="map" class="w-4 h-4"></i> Destinasi Unggulan
@@ -251,7 +251,7 @@
     <div class="absolute inset-0 opacity-20">
         <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2000&auto=format&fit=crop" class="w-full h-full object-cover">
     </div>
-    <div class="relative max-w-5xl mx-auto px-4 text-center scroll-animate">
+    <div class="relative w-full px-4 text-center scroll-animate">
         <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Siap Memulai Petualangan Anda?</h2>
         <p class="text-forest-200 text-lg md:text-xl mb-10 max-w-2xl mx-auto">Kami siap membantu Anda merencanakan perjalanan tak terlupakan ke Sanggabuana. Hubungi tim kami untuk info lebih lanjut.</p>
         <a href="#kontak" class="inline-block px-10 py-4 bg-white text-forest-900 font-bold rounded-xl hover:bg-forest-50 transition-all shadow-xl hover:-translate-y-1">
@@ -262,7 +262,7 @@
 
 {{-- Gallery Section --}}
 <section id="galeri" class="py-24 bg-forest-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16 scroll-animate">
             <div class="text-forest-600 font-bold uppercase tracking-wider text-sm mb-2 flex items-center justify-center gap-2">
                 <i data-lucide="image" class="w-4 h-4"></i> Galeri
@@ -287,7 +287,7 @@
 
 {{-- Testimonials --}}
 <section id="testimoni" class="py-24 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16 scroll-animate">
             <div class="text-forest-600 font-bold uppercase tracking-wider text-sm mb-2 flex items-center justify-center gap-2">
                 <i data-lucide="star" class="w-4 h-4"></i> Ulasan Pengunjung
@@ -391,7 +391,7 @@
         </svg>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="grid lg:grid-cols-2 gap-16">
             <div class="scroll-animate text-white">
                 <div class="text-forest-400 font-bold uppercase tracking-wider text-sm mb-2 flex items-center gap-2">

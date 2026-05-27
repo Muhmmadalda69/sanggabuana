@@ -27,8 +27,13 @@
                     </div>
                     <div>
                         <label for="password" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Password</label>
-                        <input type="password" name="password" id="password" required
-                            class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all">
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                class="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all">
+                            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none toggle-password" data-target="password">
+                                <i data-lucide="eye" class="w-5 h-5"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="flex items-center justify-between">
                         <label class="flex items-center gap-2 text-xs text-gray-600">

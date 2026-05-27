@@ -27,15 +27,21 @@
 <body class="font-sans antialiased bg-gray-50 text-gray-900">
 
     <div class="flex h-screen overflow-hidden">
+        {{-- Mobile Sidebar Backdrop --}}
+        <div id="sidebar-backdrop" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-20 hidden md:hidden"></div>
+
         {{-- Sidebar --}}
-        <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col z-20">
-            <div class="h-16 flex items-center px-6 border-b border-gray-200">
+        <aside id="admin-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-30 transform -translate-x-full md:translate-x-0 md:static flex flex-col transition-transform duration-300 ease-in-out">
+            <div class="h-16 flex items-center justify-between px-6 border-b border-gray-200">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-forest-600 flex items-center justify-center">
                         <i data-lucide="mountain" class="w-4 h-4 text-white"></i>
                     </div>
                     <span class="font-bold text-gray-800 text-lg">Admin Panel</span>
                 </a>
+                <button id="close-sidebar-btn" class="md:hidden text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
             
             <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -158,7 +164,7 @@
             {{-- Header --}}
             <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10">
                 <div class="flex items-center gap-4">
-                    <button class="md:hidden text-gray-500 hover:text-gray-700">
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-500 hover:text-gray-700">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <h1 class="text-xl font-bold text-gray-800">@yield('title')</h1>
@@ -250,6 +256,55 @@
 
     <script>
         lucide.createIcons();
+
+        // Toggle Password Visibility
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = targetId ? document.getElementById(targetId) : this.closest('.relative').querySelector('input');
+                
+                if (input) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        this.innerHTML = '<i data-lucide="eye-off" class="w-5 h-5"></i>';
+                    } else {
+                        input.type = 'password';
+                        this.innerHTML = '<i data-lucide="eye" class="w-5 h-5"></i>';
+                    }
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
+                }
+            });
+        });
+
+        // Mobile Sidebar Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const adminSidebar = document.getElementById('admin-sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            if (adminSidebar) {
+                adminSidebar.classList.toggle('-translate-x-full');
+                adminSidebar.classList.toggle('translate-x-0');
+            }
+            if (sidebarBackdrop) {
+                sidebarBackdrop.classList.toggle('hidden');
+            }
+        }
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', toggleSidebar);
+        }
+
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', toggleSidebar);
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', toggleSidebar);
+        }
 
         // Realtime Polling for Unread Messages & Testimonials
         function checkUnreadCounts() {

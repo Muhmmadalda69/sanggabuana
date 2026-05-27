@@ -23,8 +23,8 @@
 <body class="font-sans antialiased bg-forest-50 text-forest-950">
 
     {{-- Navigation --}}
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-transparent">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 {{ request()->routeIs('home') ? 'bg-transparent' : 'navbar-scroll' }}">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
                 {{-- Logo --}}
                 <a href="{{ route('home') }}" class="flex items-center gap-3 group">
@@ -135,7 +135,7 @@
 
     {{-- Footer --}}
     <footer class="bg-forest-950 text-white pt-20 pb-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
                 {{-- Brand --}}
                 <div class="lg:col-span-1">
@@ -233,15 +233,42 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Toggle Password Visibility
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = targetId ? document.getElementById(targetId) : this.closest('.relative').querySelector('input');
+                
+                if (input) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        this.innerHTML = '<i data-lucide="eye-off" class="w-5 h-5"></i>';
+                    } else {
+                        input.type = 'password';
+                        this.innerHTML = '<i data-lucide="eye" class="w-5 h-5"></i>';
+                    }
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
+                }
+            });
+        });
+
         // Navbar scroll effect
         const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('navbar-scroll');
-            } else {
-                navbar.classList.remove('navbar-scroll');
-            }
-        });
+        const isHomePage = @json(request()->routeIs('home'));
+
+        if (isHomePage) {
+            const handleScroll = () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('navbar-scroll');
+                } else {
+                    navbar.classList.remove('navbar-scroll');
+                }
+            };
+            window.addEventListener('scroll', handleScroll);
+            handleScroll();
+        }
 
         // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');

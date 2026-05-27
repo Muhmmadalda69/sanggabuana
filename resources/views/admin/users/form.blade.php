@@ -88,7 +88,10 @@
                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                         <i data-lucide="lock" class="w-5 h-5"></i>
                     </span>
-                    <input type="password" name="password" id="password" {{ $user->exists ? '' : 'required' }} placeholder="Minimal 6 karakter..." class="w-full pl-12 pr-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 focus:bg-white transition-all">
+                    <input type="password" name="password" id="password" {{ $user->exists ? '' : 'required' }} placeholder="Minimal 6 karakter..." class="w-full pl-12 pr-10 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 focus:bg-white transition-all">
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none toggle-password" data-target="password">
+                        <i data-lucide="eye" class="w-5 h-5"></i>
+                    </button>
                 </div>
             </div>
 
@@ -99,7 +102,10 @@
                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                         <i data-lucide="key" class="w-5 h-5"></i>
                     </span>
-                    <input type="password" name="password_confirmation" id="password_confirmation" {{ $user->exists ? '' : 'required' }} placeholder="Ketik ulang password..." class="w-full pl-12 pr-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 focus:bg-white transition-all">
+                    <input type="password" name="password_confirmation" id="password_confirmation" {{ $user->exists ? '' : 'required' }} placeholder="Ketik ulang password..." class="w-full pl-12 pr-10 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 focus:bg-white transition-all">
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none toggle-password" data-target="password_confirmation">
+                        <i data-lucide="eye" class="w-5 h-5"></i>
+                    </button>
                 </div>
             </div>
         </div>

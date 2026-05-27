@@ -68,7 +68,10 @@
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <i data-lucide="lock" class="w-5 h-5 text-forest-400"></i>
                             </div>
-                            <input type="password" name="password" required class="w-full bg-forest-900/50 border border-forest-700 text-white rounded-xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-forest-400 focus:ring-1 focus:ring-forest-400 transition-colors" placeholder="••••••••">
+                            <input type="password" name="password" id="password" required class="w-full bg-forest-900/50 border border-forest-700 text-white rounded-xl pl-12 pr-12 py-3.5 focus:outline-none focus:border-forest-400 focus:ring-1 focus:ring-forest-400 transition-colors" placeholder="••••••••">
+                            <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-forest-400 hover:text-forest-200 focus:outline-none toggle-password" data-target="password">
+                                <i data-lucide="eye" class="w-5 h-5"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -89,6 +92,27 @@
 
     <script>
         lucide.createIcons();
+
+        // Toggle Password Visibility
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = targetId ? document.getElementById(targetId) : this.closest('.relative').querySelector('input');
+                
+                if (input) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        this.innerHTML = '<i data-lucide="eye-off" class="w-5 h-5"></i>';
+                    } else {
+                        input.type = 'password';
+                        this.innerHTML = '<i data-lucide="eye" class="w-5 h-5"></i>';
+                    }
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>

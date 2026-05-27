@@ -69,19 +69,27 @@ class VisitorAuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:visitor_accounts,email',
             'phone' => 'nullable|string|max:20',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:8|confirmed|regex:/[a-zA-Z]/|regex:/[0-9]/',
+        ], [
+            'password.min' => 'Password minimal harus 8 karakter.',
+            'password.regex' => 'Password harus mengandung minimal satu huruf dan satu angka.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        VisitorAccount::create([
+        $account = VisitorAccount::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'password' => Hash::make($validated['password']),
-            'status' => 'pending',
+            'status' => 'active',
         ]);
 
-        return redirect()->route('visitor.login')
-            ->with('info', 'Akun berhasil dibuat! Silakan tunggu aktivasi oleh admin sebelum dapat masuk.');
+        // Auto login after registration
+        Auth::guard('visitor')->login($account);
+        $request->session()->regenerate();
+
+        return redirect()->route('visitor.dashboard')
+            ->with('success', 'Pendaftaran berhasil! Akun Anda telah aktif dan Anda otomatis masuk.');
     }
 
     public function logout(Request $request)
