@@ -85,6 +85,76 @@
             background-color: #ecfdf5;
             color: #065f46;
         }
+
+        /* Payment Modal Styles */
+        .payment-group {
+            background-color: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .payment-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-weight: bold;
+            font-size: 0.875rem;
+            color: #334155;
+        }
+
+        .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .payment-method-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .payment-method-btn:hover {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+        }
+
+        .payment-method-btn.selected {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+            box-shadow: 0 0 0 2px #10b981;
+        }
+
+        .payment-method-btn img {
+            width: 40px;
+            height: 25px;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-method-btn span {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        #payment-modal {
+            display: none;
+        }
+
+        #payment-modal.active {
+            display: flex;
+        }
     </style>
 @endpush
 
@@ -137,6 +207,9 @@
                             @csrf
                             <input type="hidden" id="ticket-base-price" value="{{ $destination->price }}">
                             <input type="hidden" name="destination_id" value="{{ $destination->id }}">
+                            <input type="hidden" name="total_amount" id="total-amount" value="0">
+                            <input type="hidden" name="admin_fee" id="admin-fee-value" value="0">
+                            <input type="hidden" name="payment_method_details" id="payment-method-details" value="">
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
@@ -225,12 +298,12 @@
                                 @if ($destination->has_member_details)
                                     {{-- Leader Province/City (member mode) — same as POS --}}
                                     <div class="col-span-1 md:col-span-2">
-                                        <div class="bg-[#f0fdf4] border border-green-100 rounded-xl p-4">
+                                        <div class="bg-[#f0fdf4] border border-green-100 rounded-xl p-4 sm:p-5">
                                             <p
-                                                class="text-[10px] font-bold text-[#16a34a] uppercase tracking-wider mb-4 m-0">
+                                                class="text-[10px] font-bold text-[#16a34a] uppercase tracking-wider mb-3">
                                                 Asal Daerah — Penanggung Jawab</p>
-                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                                <div>
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                                <div class="min-w-0">
                                                     <label
                                                         class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Kategori
                                                         Wilayah</label>
@@ -242,8 +315,7 @@
                                                         <select name="address_type" id="leader_address_type" required
                                                             class="w-full pl-9 pr-7 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all appearance-none cursor-pointer bg-white">
                                                             <option value="lokal">Lokal (Warga Sekitar)</option>
-                                                            <option value="indonesia" selected>Indonesia (Domestik)
-                                                            </option>
+                                                            <option value="indonesia" selected>Indonesia (Domestik)</option>
                                                             <option value="mancanegara">Mancanegara (Luar Negeri)</option>
                                                         </select>
                                                         <span
@@ -252,7 +324,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div>
+                                                <div class="min-w-0">
                                                     <label id="lbl_province"
                                                         class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Provinsi</label>
                                                     <div class="relative">
@@ -262,7 +334,7 @@
                                                         <select id="province" placeholder="Pilih Provinsi..."></select>
                                                     </div>
                                                 </div>
-                                                <div>
+                                                <div class="min-w-0">
                                                     <label id="lbl_city"
                                                         class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Kota
                                                         / Kabupaten</label>
@@ -478,24 +550,45 @@
                                     </div>
                                 @endif
 
-                                {{-- Payment Method --}}
-                                <div>
-                                    <label for="payment-method"
-                                        class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Metode
-                                        Pembayaran</label>
-                                    <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                                            <i data-lucide="wallet" class="w-4.5 h-4.5"></i>
-                                        </span>
-                                        <select name="payment_method" id="payment-method"
-                                            class="w-full pl-12 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all appearance-none cursor-pointer">
-                                            <option value="Transfer">QRIS (Midtrans)</option>
-                                        </select>
-                                        <span
-                                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 pointer-events-none">
-                                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                                        </span>
+                                {{-- Payment Method Accordion --}}
+                                <div class="col-span-1 md:col-span-2">
+                                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                        <!-- Accordion Header -->
+                                        <button type="button" id="payment-accordion-toggle" class="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-lg bg-forest-100 flex items-center justify-center shrink-0">
+                                                    <i data-lucide="wallet" class="w-5 h-5 text-forest-600"></i>
+                                                </div>
+                                                <div class="text-left min-w-0">
+                                                    <p class="font-semibold text-gray-800 text-sm" id="selected-payment-text">Pilih Metode Pembayaran</p>
+                                                    <p class="text-xs text-gray-500" id="selected-payment-fee">Belum ada metode dipilih</p>
+                                                </div>
+                                            </div>
+                                            <i data-lucide="chevron-down" id="payment-accordion-chevron" class="w-5 h-5 text-gray-400 transition-transform duration-300 shrink-0"></i>
+                                        </button>
+                                        
+                                        <!-- Accordion Content -->
+                                        <div id="payment-accordion-content" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out bg-white">
+                                            <div class="p-4 space-y-4">
+                                                <!-- Payment Groups Container -->
+                                                <div id="payment-methods-container" class="space-y-4">
+                                                    <!-- Payment methods will be loaded here -->
+                                                </div>
+                                                
+                                                <!-- Confirm Button -->
+                                                <button type="button" id="confirm-payment-method" 
+                                                    class="w-full py-3 bg-forest-600 hover:bg-forest-700 text-white font-bold rounded-xl transition-all shadow-md mt-4">
+                                                    Konfirmasi Metode Pembayaran
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
+                                    
+                                    <!-- Hidden inputs for form submission -->
+                                    <input type="hidden" name="payment_method" id="payment-method" value="">
+                                    <input type="hidden" name="payment_method_type" id="payment-method-type" value="">
+                                    <input type="hidden" name="payment_fee" id="payment-fee" value="0">
+                                    <input type="hidden" name="payment_fee_type" id="payment-fee-type" value="percentage">
                                 </div>
 
                                 {{-- Read-only Ticket Price --}}
@@ -523,7 +616,7 @@
                                         <span class="font-bold text-gray-800" id="raw-total-tickets">Rp 0</span>
                                     </div>
                                     <div class="flex justify-between text-xs text-gray-500">
-                                        <span>Biaya Admin QRIS (2%):</span>
+                                        <span>Biaya Layanan:</span>
                                         <span class="font-bold text-gray-800" id="admin-fee-amount">Rp 0</span>
                                     </div>
                                 </div>
@@ -671,118 +764,86 @@
     </div>
 @endsection
 
+
+
 @push('scripts')
-    <!-- TomSelect JS -->
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const basePrice = parseInt(document.getElementById('ticket-base-price').value);
-            const posTotalPay = document.getElementById('pos-total-pay');
+<!-- TomSelect JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const basePrice = parseInt(document.getElementById('ticket-base-price').value);
+        const posTotalPay = document.getElementById('pos-total-pay');
+        const rawTotalTickets = document.getElementById('raw-total-tickets');
+        const adminFeeAmount = document.getElementById('admin-fee-amount');
 
-            const qtyMaleInput = document.getElementById('qty_male');
-            const qtyFemaleInput = document.getElementById('qty_female');
-            const qtyKidsInput = document.getElementById('qty_kids');
-            const gunungCalcTotal = document.getElementById('gunung-calc-total');
+        // Payment elements
+        const paymentMethodsContainer = document.getElementById('payment-methods-container');
+        const paymentMethodInput = document.getElementById('payment-method');
+        const paymentMethodTypeInput = document.getElementById('payment-method-type');
+        const paymentFeeInput = document.getElementById('payment-fee');
+        const paymentFeeTypeInput = document.getElementById('payment-fee-type');
 
-            // Address category elements
-            const addressTypeSelect = document.getElementById('address_type');
-            const leaderAddressTypeEl = document.getElementById('leader_address_type');
-            const provinceSelect = document.getElementById('province');
-            const citySelect = document.getElementById('city_input');
-            const lblProvince = document.getElementById('lbl_province');
-            const lblCity = document.getElementById('lbl_city');
+        // Quantity inputs
+        const qtyMaleInput = document.getElementById('qty_male');
+        const qtyFemaleInput = document.getElementById('qty_female');
+        const qtyKidsInput = document.getElementById('qty_kids');
+        const gunungCalcTotal = document.getElementById('gunung-calc-total');
+        const gunungCalcTotalBadge = document.getElementById('gunung-calc-total-badge');
 
-            let tsProvince = null;
-            let tsCity = null;
+        // Address category elements
+        const addressTypeSelect = document.getElementById('address_type');
+        const leaderAddressTypeEl = document.getElementById('leader_address_type');
+        const provinceSelect = document.getElementById('province');
+        const citySelect = document.getElementById('city_input');
+        const lblProvince = document.getElementById('lbl_province');
+        const lblCity = document.getElementById('lbl_city');
 
-            // Init TomSelect for Province
-            if (provinceSelect) {
-                tsProvince = new TomSelect(provinceSelect, {
-                    create: true,
-                    sortField: {
-                        field: "text",
-                        direction: "asc"
-                    },
-                    placeholder: 'Pilih Provinsi / Negara...',
-                    onChange: function(value) {
-                        const hiddenP = document.getElementById('province_hidden');
-                        if (hiddenP) hiddenP.value = value || '';
-                        const activeType = leaderAddressTypeEl ? leaderAddressTypeEl.value : (
-                            addressTypeSelect ? addressTypeSelect.value : 'indonesia');
-                        if (activeType === 'indonesia') {
-                            const option = this.options[value];
-                            if (option && option.id) loadCities(option.id);
-                        } else if (activeType === 'mancanegara' && value) {
-                            loadWorldCities(value);
-                        }
+        // Payment accordion elements
+        const selectedPaymentText = document.getElementById('selected-payment-text');
+        const paymentAccordionToggle = document.getElementById('payment-accordion-toggle');
+        const paymentAccordionContent = document.getElementById('payment-accordion-content');
+        const paymentAccordionChevron = document.getElementById('payment-accordion-chevron');
+
+        let tsProvince = null;
+        let tsCity = null;
+        let selectedPaymentMethod = null;
+
+        // Initialize TomSelect for province dropdown
+        if (provinceSelect) {
+            tsProvince = new TomSelect(provinceSelect, {
+                create: true,
+                sortField: { field: 'text', direction: 'asc' },
+                placeholder: 'Pilih Provinsi...',
+                onChange: function(value) {
+                    const hiddenP = document.getElementById('province_hidden');
+                    if (hiddenP) hiddenP.value = value || '';
+                    const type = (leaderAddressTypeEl ? leaderAddressTypeEl.value : (addressTypeSelect ? addressTypeSelect.value : 'indonesia'));
+                    if (type === 'indonesia') {
+                        const opt = this.options[value];
+                        if (opt && opt.id) loadCities(opt.id);
+                    } else if (type === 'mancanegara' && value) {
+                        loadWorldCities(value);
                     }
-                });
-            }
-
-            // Init TomSelect for City
-            if (citySelect) {
-                tsCity = new TomSelect(citySelect, {
-                    create: true,
-                    sortField: {
-                        field: "text",
-                        direction: "asc"
-                    },
-                    placeholder: 'Pilih Kota...',
-                    onChange: function(val) {
-                        const hiddenC = document.getElementById('city_hidden');
-                        if (hiddenC) hiddenC.value = val || '';
-                        calculatePOS();
-                    }
-                });
-            }
-
-            function formatRupiah(number) {
-                return 'Rp ' + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
-
-            function calculatePOS() {
-                let qty = 1;
-                const kidsDiscount = {{ $destination->kids_discount ?? 0 }};
-                const kidsPrice = kidsDiscount > 0 ? Math.round(basePrice * (1 - kidsDiscount / 100)) : basePrice;
-                let ticketTotal = 0;
-
-                const hasMemberDetails = {{ $destination->has_member_details ? 'true' : 'false' }};
-                if (hasMemberDetails) {
-                    const rows = document.querySelectorAll('.member-row');
-                    qty = rows.length + 1;
-                    ticketTotal = basePrice; // leader full price
-                    rows.forEach(row => {
-                        const isChild = row.querySelector('select[name*="[is_child]"]')?.value === '1';
-                        ticketTotal += isChild ? kidsPrice : basePrice;
-                    });
-                    if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
-                    const calcBadge = document.getElementById('gunung-calc-total-badge');
-                    if (calcBadge) calcBadge.innerText = qty;
-                } else {
-                    const male = qtyMaleInput ? (parseInt(qtyMaleInput.value) || 0) : 0;
-                    const female = qtyFemaleInput ? (parseInt(qtyFemaleInput.value) || 0) : 0;
-                    const kids = qtyKidsInput ? (parseInt(qtyKidsInput.value) || 0) : 0;
-                    qty = male + female + kids + 1;
-                    ticketTotal = (male + female + 1) * basePrice + kids * kidsPrice;
-                    if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
-                    const calcBadge = document.getElementById('gunung-calc-total-badge');
-                    if (calcBadge) calcBadge.innerText = qty;
                 }
+            });
+        }
 
-                // Calculate 2% Admin Fee
-                const adminFee = Math.round(ticketTotal * 0.02);
-                const finalTotal = ticketTotal + adminFee;
+        // Initialize TomSelect for city dropdown
+        if (citySelect) {
+            tsCity = new TomSelect(citySelect, {
+                create: true,
+                sortField: { field: 'text', direction: 'asc' },
+                placeholder: 'Pilih Kota...',
+                onChange: function(value) {
+                    const hiddenC = document.getElementById('city_hidden');
+                    if (hiddenC) hiddenC.value = value || '';
+                }
+            });
+        }
 
-                const rawTotalEl = document.getElementById('raw-total-tickets');
-                if (rawTotalEl) rawTotalEl.innerText = formatRupiah(ticketTotal);
-
-                const adminFeeEl = document.getElementById('admin-fee-amount');
-                if (adminFeeEl) adminFeeEl.innerText = formatRupiah(adminFee);
-
-                posTotalPay.innerText = formatRupiah(finalTotal);
-            }
-            // Expose to global so the member_row_js partial can call it
-            window.calculatePOS = calculatePOS;
+        function formatRupiah(number) {
+            return 'Rp ' + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
 
             // Fetch Functions
             async function loadProvinces() {
@@ -1016,13 +1077,63 @@
                 }
             }
 
-            // Add event listeners for dynamic calculation
+        // Replace the calculatePOS function
+        function calculatePOS() {
+            let qty = 1;
+            const kidsDiscount = {{ $destination->kids_discount ?? 0 }};
+            const kidsPrice = kidsDiscount > 0 ? Math.round(basePrice * (1 - kidsDiscount / 100)) : basePrice;
+            let ticketTotal = 0;
+
+            const hasMemberDetails = {{ $destination->has_member_details ? 'true' : 'false' }};
+            if (hasMemberDetails) {
+                const rows = document.querySelectorAll('.member-row');
+                qty = rows.length + 1;
+                ticketTotal = basePrice; // leader full price
+                rows.forEach(row => {
+                    const isChild = row.querySelector('select[name*="[is_child]"]')?.value === '1';
+                    ticketTotal += isChild ? kidsPrice : basePrice;
+                });
+                if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
+                const calcBadge = document.getElementById('gunung-calc-total-badge');
+                if (calcBadge) calcBadge.innerText = qty;
+            } else {
+                const male = qtyMaleInput ? (parseInt(qtyMaleInput.value) || 0) : 0;
+                const female = qtyFemaleInput ? (parseInt(qtyFemaleInput.value) || 0) : 0;
+                const kids = qtyKidsInput ? (parseInt(qtyKidsInput.value) || 0) : 0;
+                qty = male + female + kids + 1;
+                ticketTotal = (male + female + 1) * basePrice + kids * kidsPrice;
+                if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
+                const calcBadge = document.getElementById('gunung-calc-total-badge');
+                if (calcBadge) calcBadge.innerText = qty;
+            }
+
+            // Calculate payment fee
+            let adminFee = 0;
+            if (selectedPaymentMethod) {
+                if (selectedPaymentMethod.feeType === 'fix') {
+                    adminFee = selectedPaymentMethod.feeAmount;
+                } else {
+                    adminFee = Math.round(ticketTotal * selectedPaymentMethod.feeAmount);
+                }
+            }
+
+            const grandTotal = ticketTotal + adminFee;
+
+            if (rawTotalTickets) rawTotalTickets.textContent = formatRupiah(ticketTotal);
+            if (adminFeeAmount) adminFeeAmount.textContent = formatRupiah(adminFee);
+            posTotalPay.textContent = formatRupiah(grandTotal);
+        }
+        // Expose to global so the member_row_js partial can call it
+        window.calculatePOS = calculatePOS;
+
+        function addEventListeners() {
             if (qtyMaleInput) qtyMaleInput.addEventListener('input', calculatePOS);
             if (qtyFemaleInput) qtyFemaleInput.addEventListener('input', calculatePOS);
             if (qtyKidsInput) qtyKidsInput.addEventListener('input', calculatePOS);
             if (addressTypeSelect) addressTypeSelect.addEventListener('change', handleAddressTypeChange);
             if (leaderAddressTypeEl) leaderAddressTypeEl.addEventListener('change', handleLeaderAddressTypeChange);
             if (purposeSelect) purposeSelect.addEventListener('change', handlePurposeChange);
+        }
 
             // Accordion Toggle for Detail Jumlah Rombongan
             const accordionToggle = document.getElementById('toggle-rombongan-accordion');
@@ -1056,8 +1167,172 @@
                 });
             }
 
-            // Dynamic Member Rows Management — handled by shared partial below
-            // Run initial calculations and set locks
+// Payment Modal Functions - Changed to Accordion
+            function loadPaymentMethodsStatic() {
+                const paymentGroups = {
+                    VA: {
+                        name: 'Virtual Account',
+                        methods: [
+                            {code: 'bca', name: 'BCA VA', icon: '/images/payment/bca.svg', feeType: 'fix', feeAmount: 10000},
+                            {code: 'bni', name: 'BNI VA', icon: '/images/payment/bni.svg', feeType: 'fix', feeAmount: 10000},
+                            {code: 'bri', name: 'BRI VA', icon: '/images/payment/bri.svg', feeType: 'fix', feeAmount: 10000},
+                            {code: 'mandiri', name: 'Mandiri Bill', icon: '/images/payment/mandiri.svg', feeType: 'fix', feeAmount: 10000},
+                            {code: 'permata', name: 'Permata VA', icon: '/images/payment/permata.svg', feeType: 'fix', feeAmount: 10000}
+                        ]
+                    },
+                    QRIS: {
+                        name: 'QRIS',
+                        methods: [
+                            {code: 'qris', name: 'QRIS', icon: '/images/payment/qris.svg', feeType: 'percentage', feeAmount: 0.02}
+                        ]
+                    },
+                    EWALLET: {
+                        name: 'E-Money',
+                        methods: [
+                            {code: 'gopay', name: 'GoPay', icon: '/images/payment/gopay.svg', feeType: 'percentage', feeAmount: 0.05},
+                            {code: 'shopeepay', name: 'ShopeePay', icon: '/images/payment/shopeepay.svg', feeType: 'percentage', feeAmount: 0.05},
+                        ]
+                    },
+                    ALFAMART: {
+                        name: 'Convenience Store',
+                        methods: [
+                            {code: 'alfamart', name: 'Alfamart', icon: '/images/payment/alfamart.svg', feeType: 'fix', feeAmount: 10000},
+                            {code: 'indomaret', name: 'Indomaret', icon: '/images/payment/indomaret.svg', feeType: 'fix', feeAmount: 10000}
+                        ]
+                    }
+                };
+                
+                paymentMethodsContainer.innerHTML = '';
+                
+                for (const [groupCode, group] of Object.entries(paymentGroups)) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'payment-group mb-4';
+                    
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'payment-group-header flex justify-between items-center mb-3';
+                    const feeText = group.methods[0].feeType === 'fix'
+                        ? formatRupiah(group.methods[0].feeAmount)
+                        : Math.round(group.methods[0].feeAmount * 100) + '%';
+                    headerDiv.innerHTML = `
+                        <span class="text-sm font-semibold text-gray-800">${group.name}</span>
+                        <span class="text-xs text-gray-500">Biaya: ${feeText}</span>
+                    `;
+                    
+                    groupDiv.appendChild(headerDiv);
+                    
+                    const methodsDiv = document.createElement('div');
+                    methodsDiv.className = 'payment-methods-grid';
+                    
+                    group.methods.forEach(method => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'payment-method-btn';
+                        btn.dataset.methodCode = method.code;
+                        btn.dataset.methodName = method.name;
+                        btn.dataset.groupCode = groupCode;
+                        btn.dataset.feeType = method.feeType;
+                        btn.dataset.feeAmount = method.feeAmount;
+                        btn.dataset.icon = method.icon;
+                        
+                        btn.innerHTML = `
+                            <img src="${method.icon}" alt="${method.name}" class="w-10 h-6 object-contain mb-2">
+                            <span class="text-xs font-medium">${method.name}</span>
+                        `;
+                        
+                        btn.addEventListener('click', () => {
+                            document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                            selectedPaymentMethod = method;
+                        });
+                        
+                        methodsDiv.appendChild(btn);
+                    });
+                    
+                    groupDiv.appendChild(methodsDiv);
+                    paymentMethodsContainer.appendChild(groupDiv);
+                }
+            }
+            
+            // Accordion Toggle Function
+            if (paymentAccordionToggle && paymentAccordionContent) {
+                paymentAccordionToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const isCollapsed = paymentAccordionContent.style.maxHeight === '0px' || paymentAccordionContent.style.maxHeight === '';
+                    if (isCollapsed) {
+                        paymentAccordionContent.style.maxHeight = paymentAccordionContent.scrollHeight + "px";
+                        if (paymentAccordionChevron) {
+                            paymentAccordionChevron.style.transform = "rotate(180deg)";
+                            paymentAccordionChevron.setAttribute('data-lucide', 'chevron-up');
+                        }
+                        if (window.lucide) lucide.createIcons();
+                    } else {
+                        paymentAccordionContent.style.maxHeight = "0px";
+                        if (paymentAccordionChevron) {
+                            paymentAccordionChevron.style.transform = "rotate(0deg)";
+                            paymentAccordionChevron.setAttribute('data-lucide', 'chevron-down');
+                        }
+                        if (window.lucide) lucide.createIcons();
+                    }
+                });
+            }
+            
+            // Event listeners for payment accordion
+            const confirmPaymentMethod = document.getElementById('confirm-payment-method');
+            if (confirmPaymentMethod) {
+                confirmPaymentMethod.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!selectedPaymentMethod) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Peringatan',
+                            text: 'Silakan pilih metode pembayaran terlebih dahulu',
+                            confirmButtonColor: '#059669'
+                        });
+                        return;
+                    }
+                    
+                    if (paymentMethodInput) paymentMethodInput.value = selectedPaymentMethod.code;
+                    if (paymentMethodTypeInput) paymentMethodTypeInput.value = selectedPaymentMethod.groupCode;
+                    if (paymentFeeInput) paymentFeeInput.value = selectedPaymentMethod.feeType === 'fix' ? selectedPaymentMethod.feeAmount : selectedPaymentMethod.feeAmount;
+                    if (paymentFeeTypeInput) paymentFeeTypeInput.value = selectedPaymentMethod.feeType;
+                    
+                    const feeText = selectedPaymentMethod.feeType === 'fix'
+                        ? formatRupiah(selectedPaymentMethod.feeAmount)
+                        : Math.round(selectedPaymentMethod.feeAmount * 100) + '%';
+                    
+                    if (selectedPaymentText) {
+                        selectedPaymentText.innerHTML = `
+                            <div class="flex items-center gap-2">
+                                <img src="${selectedPaymentMethod.icon}" class="w-6 h-4 object-contain">
+                                <span>${selectedPaymentMethod.name}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    const selectedPaymentFee = document.getElementById('selected-payment-fee');
+                    if (selectedPaymentFee) selectedPaymentFee.textContent = `Biaya admin: ${feeText}`;
+                    
+                    // Close accordion
+                    if (paymentAccordionContent) paymentAccordionContent.style.maxHeight = "0px";
+                    if (paymentAccordionChevron) {
+                        paymentAccordionChevron.style.transform = "rotate(0deg)";
+                        paymentAccordionChevron.setAttribute('data-lucide', 'chevron-down');
+                        if (window.lucide) lucide.createIcons();
+                    }
+                    
+                    calculatePOS();
+                });
+            }
+            
+            // Initialize payment methods
+            loadPaymentMethodsStatic();
+            
+            // Add event listeners for calculation
+            addEventListeners();
+
+            // Run initial calculations
             calculatePOS();
             handleAddressTypeChange();
             handleLeaderAddressTypeChange();
@@ -1095,9 +1370,47 @@
                     }
                 });
             @endif
+            // Form submission handler
+            const form = document.getElementById('online-register-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!selectedPaymentMethod) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Peringatan',
+                            text: 'Silakan pilih metode pembayaran terlebih dahulu',
+                            confirmButtonColor: '#059669'
+                        });
+                        return;
+                    }
+                    
+                    // Update total amount and admin fee before submission
+                    const totalPayText = document.getElementById('pos-total-pay').textContent;
+                    const totalAmount = parseInt(totalPayText.replace(/[^0-9]/g, ''));
+                    
+                    document.getElementById('total-amount').value = totalAmount;
+                    const rawTotal = document.getElementById('raw-total-tickets').textContent;
+                    const ticketAmount = parseInt(rawTotal.replace(/[^0-9]/g, '')) || 0;
+                    
+                    const adminFee = selectedPaymentMethod.feeType === 'fix' 
+                        ? selectedPaymentMethod.feeAmount 
+                        : Math.round(ticketAmount * selectedPaymentMethod.feeAmount);
+                    document.getElementById('admin-fee-value').value = adminFee;
+                    
+                    document.getElementById('payment-method-details').value = JSON.stringify({
+                        code: selectedPaymentMethod.code,
+                        name: selectedPaymentMethod.name,
+                        group: selectedPaymentMethod.groupCode,
+                        fee_type: selectedPaymentMethod.feeType,
+                        fee_amount: selectedPaymentMethod.feeAmount,
+                        icon: selectedPaymentMethod.icon
+                    });
+                });
+            }
         });
-    </script>
-    @if ($destination->has_member_details)
-        @include('partials.member_row_js')
-    @endif
+</script>
+@if ($destination->has_member_details)
+    @include('partials.member_row_js')
+@endif
 @endpush

@@ -1,5 +1,55 @@
 @extends('layouts.admin')
 
+@push('styles')
+<style>
+    #qr-video-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    #qr-video {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+        border-radius: 1rem;
+        border: 2px solid #10b981;
+    }
+    #qr-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #qr-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    #qr-scanner-canvas {
+        display: none;
+    }
+</style>
+@endpush
+
 @section('title', 'Monitoring Pengunjung')
 
 @section('content')
@@ -22,17 +72,14 @@
 
         {{-- Filter & Search --}}
     <form action="{{ route('admin.monitoring.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-        <div class="relative sm:col-span-1">
+        <div class="relative sm:col-span-3">
             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                 <i data-lucide="search" class="w-4.5 h-4.5"></i>
             </span>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, no. tiket, grup..." class="w-full pl-12 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-colors">
-        </div>
-        <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                <i data-lucide="calendar" class="w-4.5 h-4.5"></i>
-            </span>
-            <input type="date" name="visit_date" value="{{ request('visit_date') }}" class="w-full pl-12 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-colors">
+            <input type="text" name="search" id="search-input" value="{{ request('search') }}" placeholder="Cari nama, no. tiket, grup, atau scan QR..." class="w-full pl-12 pr-12 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-colors">
+            <button type="button" id="qr-camera-btn" class="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-forest-600 transition-colors">
+                <i data-lucide="camera" class="w-5 h-5"></i>
+            </button>
         </div>
         <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
@@ -478,6 +525,170 @@ function closeGroupModal() {
 document.getElementById('monitoring-group-modal').addEventListener('click', function(e) {
     if (e.target === this) closeGroupModal();
 });
+
+// QR Code Scan Handler - Combined Search and QR Scan
+const searchInput = document.getElementById('search-input');
+const qrCameraBtn = document.getElementById('qr-camera-btn');
+let videoStream = null;
+
+// Handle QR Camera Button Click
+if (qrCameraBtn) {
+    qrCameraBtn.addEventListener('click', async function() {
+        try {
+            // Stop any existing stream
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+
+            // Request camera access
+            console.log('Requesting camera access...');
+            videoStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            console.log('Camera access granted, stream:', videoStream);
+
+            // Create video element
+            const video = document.createElement('video');
+            video.autoplay = true;
+            video.playsInline = true;
+            video.muted = true;
+            video.width = 640;
+            video.height = 480;
+            video.srcObject = videoStream;
+            console.log('Video element created, srcObject:', video.srcObject);
+
+            // Create canvas for scanning
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Show overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'qr-overlay';
+            overlay.style.display = 'block';
+            document.body.appendChild(overlay);
+
+            const videoContainer = document.createElement('div');
+            videoContainer.id = 'qr-video-container';
+            videoContainer.style.display = 'flex';
+            document.body.appendChild(videoContainer);
+
+            videoContainer.appendChild(video);
+
+            // Add video styles
+            video.style.width = '100%';
+            video.style.maxWidth = '500px';
+            video.style.height = 'auto';
+            video.style.borderRadius = '1rem';
+            video.style.border = '2px solid #10b981';
+
+            // Close button
+            const closeBtn = document.createElement('button');
+            closeBtn.id = 'qr-close-btn';
+            closeBtn.innerHTML = '<i data-lucide="x" class="w-6 h-6 text-gray-800"></i>';
+            videoContainer.appendChild(closeBtn);
+
+            if (window.lucide) window.lucide.createIcons();
+
+            // Wait for video to load
+            video.onloadedmetadata = function() {
+                console.log('Video loaded, playing...');
+                video.play().then(() => {
+                    console.log('Video playing, starting scan...');
+                    scanQRCode();
+                }).catch(err => {
+                    console.error('Error playing video:', err);
+                    alert('Gagal memutar video: ' + err.message);
+                    closeQRScanner();
+                });
+            };
+
+            // Close button handler
+            closeBtn.addEventListener('click', function() {
+                closeQRScanner();
+            });
+
+            overlay.addEventListener('click', function() {
+                closeQRScanner();
+            });
+
+            // Scan function
+            function scanQRCode() {
+                console.log('Scanning... video.paused:', video.paused, 'readyState:', video.readyState);
+                
+                if (video.paused || video.readyState !== video.HAVE_ENOUGH_DATA) {
+                    // Continue checking if video is ready
+                    requestAnimationFrame(scanQRCode);
+                    return;
+                }
+
+                try {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    
+                    console.log('Canvas size:', canvas.width, 'x', canvas.height, 'Image data:', imageData.width, 'x', imageData.height);
+                    
+                    // Use jsQR library if available
+                    if (typeof jsQR !== 'undefined') {
+                        const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+                        console.log('jsQR result:', qrCode);
+                        if (qrCode) {
+                            console.log('QR Code found:', qrCode.data);
+                            searchInput.value = qrCode.data;
+                            closeQRScanner();
+                            // Auto submit form
+                            setTimeout(() => {
+                                searchInput.form.submit();
+                            }, 100);
+                            return;
+                        }
+                    } else {
+                        console.log('jsQR not available');
+                    }
+                } catch (err) {
+                    console.error('Error during scan:', err);
+                }
+                
+                // Continue scanning with a small delay to prevent CPU overload
+                setTimeout(() => {
+                    if (!video.paused) {
+                        requestAnimationFrame(scanQRCode);
+                    }
+                }, 100);
+            }
+
+            // Start scanning
+            console.log('Starting scan function...');
+            setTimeout(() => {
+                scanQRCode();
+            }, 500);
+
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            alert('Gagal mengakses kamera: ' + err.message);
+            closeQRScanner();
+        }
+    });
+}
+
+function closeQRScanner() {
+    const videoContainer = document.getElementById('qr-video-container');
+    const overlay = document.getElementById('qr-overlay');
+    
+    if (videoContainer) {
+        videoContainer.remove();
+    }
+    if (overlay) {
+        overlay.remove();
+    }
+    
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+    }
+}
 </script>
 
 @include('admin.partials.ticket_modal')

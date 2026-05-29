@@ -61,6 +61,7 @@ Route::get('/payment/{paymentToken}/pay', [PaymentController::class, 'pay'])->na
 Route::get('/payment/{paymentToken}/finish', [PaymentController::class, 'finish'])->name('payment.finish');
 Route::get('/payment/{paymentToken}/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/{paymentToken}/status', [PaymentController::class, 'status'])->name('payment.status');
+Route::get('/payment/methods', [PaymentController::class, 'paymentMethods'])->name('payment.methods');
 Route::post('/payment/{paymentToken}/change-method', [PaymentController::class, 'changeMethod'])->name('payment.change-method');
 Route::post('/payment/{paymentToken}/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
 Route::post('/payment/notification', [PaymentController::class, 'notificationHandler'])->name('payment.notification');

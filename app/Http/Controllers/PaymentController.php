@@ -21,7 +21,7 @@ class PaymentController extends Controller
         $this->midtrans = $midtrans;
     }
 
-    public function pay($tempToken)
+    public function pay(Request $request, $tempToken)
     {
         $pending = PendingRegistration::where('temp_token', $tempToken)
             ->where('status', 'pending')
@@ -75,26 +75,115 @@ class PaymentController extends Controller
             ];
         }
 
-        // Calculate 2% admin fee (matching frontend calculation)
-        $adminFee = (int) round($ticketTotal * 0.02);
-        $grossAmount = $ticketTotal + $adminFee;
+            // Parse payment method details from form or database fallback
+            $adminFee = 0;
+            $paymentMethodDetails = $request->input('payment_method_details');
+            $paymentMethodType = '';
+            
+            if ($paymentMethodDetails) {
+                $details = json_decode($paymentMethodDetails, true);
+                if ($details) {
+                    $pending->payment_method = $details['name'] ?? $pending->payment_method;
+                    $paymentMethodType = $details['group'] ?? '';
+                }
+            }
+            
+            // If paymentMethodType is empty (e.g., redirected GET request), determine it from database
+            if (empty($paymentMethodType) && !empty($pending->payment_method)) {
+                $paymentMethodType = $this->midtrans->getPaymentGroup($pending->payment_method);
+            }
+            
+            // Calculate admin fee based on payment method group
+            $paymentGroup = $paymentMethodType ?: 'QRIS';
+            $feeConfig = $this->midtrans->getPaymentFees($paymentGroup);
+            if ($feeConfig['type'] === 'fix') {
+                $adminFee = $feeConfig['amount'];
+            } else {
+                $adminFee = (int) round($ticketTotal * ($feeConfig['percentage'] ?? 0.02));
+            }
+            
+            $paymentMethod = $request->input('payment_method') ?: $pending->payment_method ?: 'qris';
 
-        // Add admin fee as a separate line item
-        $items[] = [
-            'id' => 'ADMIN-FEE',
-            'price' => $adminFee,
-            'quantity' => 1,
-            'name' => 'Biaya Admin QRIS (2%)',
-        ];
+            $grossAmount = $ticketTotal + $adminFee;
 
-        $transaction = $this->midtrans->buildTransactionDetails($orderId, $grossAmount, $items);
-        $transaction['customer_details'] = $customerDetails;
-        $transaction['callbacks'] = [
-            'finish' => route('payment.finish', $pending->temp_token),
-            'error' => route('payment.finish', $pending->temp_token),
-        ];
+            // Update admin fee item based on selected payment method
+            $items[] = [
+                'id'        => 'ADMIN-FEE',
+                'price'      => $adminFee,
+                'quantity'   => 1,
+                'name'       => 'Biaya Admin ' . ($pending->payment_method ?? 'Pembayaran'),
+            ];
 
-        $result = $this->midtrans->createSnapTransaction($transaction);
+            $transaction = $this->midtrans->buildTransactionDetails($orderId, $grossAmount, $items, $paymentMethodType);
+            $transaction['customer_details'] = $customerDetails;
+            
+            // Configure enabled payments based on method type and specific method code
+            $enabledPayments = [];
+            $paymentType = 'credit_card';
+            
+            // Map user-facing codes to Midtrans Snap enabled_payments codes
+            // Note: 'qris' standalone doesn't work in Sandbox — use 'other_qris' + 'gopay'
+            $midtransChannelMap = [
+                'bca'       => ['enabled' => ['bca_va'],               'type' => 'bank_transfer'],
+                'bni'       => ['enabled' => ['bni_va'],               'type' => 'bank_transfer'],
+                'bri'       => ['enabled' => ['bri_va'],               'type' => 'bank_transfer'],
+                'permata'   => ['enabled' => ['permata_va'],           'type' => 'bank_transfer'],
+                'mandiri'   => ['enabled' => ['echannel'],             'type' => 'bank_transfer'],
+                'qris'      => ['enabled' => ['other_qris'],           'type' => 'qris'],
+                'gopay'     => ['enabled' => ['gopay'],                'type' => 'gopay'],
+                'shopeepay' => ['enabled' => ['shopeepay'],            'type' => 'shopeepay'],
+                'alfamart'  => ['enabled' => ['alfamart'],             'type' => 'cstore'],
+            ];
+            
+            $methodCode = strtolower($paymentMethod);
+            
+            if (isset($midtransChannelMap[$methodCode])) {
+                $channel = $midtransChannelMap[$methodCode];
+                $enabledPayments = $channel['enabled'];
+                $paymentType = $channel['type'];
+                
+                // Add bank_transfer details for VA (except Mandiri which uses echannel)
+                if ($paymentMethodType === 'VA' && $methodCode !== 'mandiri') {
+                    $transaction['bank_transfer'] = ['bank' => $methodCode];
+                }
+                // Add cstore details for convenience stores
+                if ($paymentMethodType === 'ALFAMART') {
+                    $transaction['cstore'] = ['store' => $methodCode];
+                }
+            } else {
+                // Fallback: enable all channels for the group
+                switch ($paymentMethodType) {
+                    case 'VA':
+                        $enabledPayments = ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'echannel'];
+                        $paymentType = 'bank_transfer';
+                        break;
+                    case 'QRIS':
+                        $enabledPayments = ['other_qris', 'gopay'];
+                        $paymentType = 'qris';
+                        break;
+                    case 'EWALLET':
+                        $enabledPayments = ['gopay', 'shopeepay'];
+                        $paymentType = 'gopay';
+                        break;
+                    case 'ALFAMART':
+                        $enabledPayments = ['alfamart'];
+                        $paymentType = 'cstore';
+                        break;
+                    default:
+                        $enabledPayments = ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'echannel', 'other_qris', 'gopay', 'shopeepay', 'alfamart'];
+                        $paymentType = 'bank_transfer';
+                }
+            }
+            
+            $transaction['enabled_payments'] = $enabledPayments;
+            $transaction['payment_type'] = $paymentType;
+            
+            $transaction['callbacks'] = [
+                'finish' => route('payment.finish', $pending->temp_token),
+                'error' => route('payment.finish', $pending->temp_token),
+            ];
+
+            $result = $this->midtrans->createSnapTransaction($transaction);
 
         if (!$result['success']) {
             return redirect()->route('destination.register.date', $pending->slug)
@@ -180,7 +269,7 @@ class PaymentController extends Controller
             ->firstOrFail();
 
         $validated = $request->validate([
-            'payment_method' => 'required|string|in:Transfer',
+            'payment_method' => 'required|string|in:bca,bni,bri,mandiri,permata,qris,gopay,shopeepay,alfamart',
         ]);
 
         $pending->payment_method = $validated['payment_method'];
@@ -360,8 +449,8 @@ class PaymentController extends Controller
                     'payment_method' => $pending->payment_method,
                     'payment_status' => 'success',
                     'payment_details' => json_encode($midtransResponse),
-                    'status' => 'in',
-                    'checked_in_at' => Carbon::now(),
+                    'status' => 'pending',
+                    'checked_in_at' => null,
                 ], $pending->visitor_account_id ? ['visitor_account_id' => $pending->visitor_account_id] : []));
             }
         } else {
@@ -403,6 +492,13 @@ class PaymentController extends Controller
         }
 
         $pending->update(['status' => 'completed']);
+    }
+
+    public function paymentMethods()
+    {
+        return response()->json(
+            (new \App\Services\MidtransService())->getPaymentMethods()
+        );
     }
 
     public function cancel($tempToken)

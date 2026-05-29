@@ -232,7 +232,7 @@ class HomeController extends Controller
                 'address_type' => 'required|string|in:lokal,indonesia,mancanegara',
                 'province' => 'required|string|max:255',
                 'city' => 'required|string|max:255',
-                'payment_method' => 'required|string|in:Tunai,Transfer',
+                'payment_method' => 'required|string|in:Tunai,Transfer,bca,bni,bri,mandiri,permata,qris,gopay,shopeepay,dana,grab_pay,alfamart,indomaret',
             ];
 
             if ($destination->has_purpose) {
@@ -316,7 +316,7 @@ class HomeController extends Controller
                 'qty_male' => 'required|integer|min:0',
                 'qty_female' => 'required|integer|min:0',
                 'qty_kids' => 'required|integer|min:0',
-                'payment_method' => 'required|string|in:Tunai,Transfer',
+                'payment_method' => 'required|string|in:Tunai,Transfer,bca,bni,bri,mandiri,permata,qris,gopay,shopeepay,dana,grab_pay,alfamart,indomaret',
                 'avg_age' => 'required|integer|min:1|max:100',
             ];
 

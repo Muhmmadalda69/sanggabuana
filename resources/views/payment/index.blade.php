@@ -23,7 +23,20 @@
                 @php
                     $items = $pending->form_data['items'] ?? [];
                     $ticketTotal = (int) ($pending->form_data['total_amount'] ?? 0);
-                    $adminFee = (int) round($ticketTotal * 0.02);
+                    
+                    $paymentMethod = $pending->payment_method ?? 'qris';
+                    $midtransService = new \App\Services\MidtransService();
+                    $paymentGroup = $midtransService->getPaymentGroup($paymentMethod);
+                    $feeConfig = $midtransService->getPaymentFees($paymentGroup);
+                    
+                    if ($feeConfig['type'] === 'fix') {
+                        $adminFee = $feeConfig['amount'];
+                        $feeLabel = 'Biaya Admin ' . strtoupper($paymentMethod);
+                    } else {
+                        $adminFee = (int) round($ticketTotal * ($feeConfig['percentage'] ?? 0.02));
+                        $feeLabel = 'Biaya Admin ' . strtoupper($paymentMethod) . ' (' . (($feeConfig['percentage'] ?? 0.02) * 100) . '%)';
+                    }
+                    
                     $grandTotal = $ticketTotal + $adminFee;
                 @endphp
                 @forelse($items as $item)
@@ -46,7 +59,7 @@
                     <span class="font-semibold">Rp {{ number_format($ticketTotal, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between items-center text-sm text-gray-600 mb-1">
-                    <span>Biaya Admin QRIS (2%)</span>
+                    <span>{{ $feeLabel }}</span>
                     <span class="font-semibold">Rp {{ number_format($adminFee, 0, ',', '.') }}</span>
                 </div>
             </div>
@@ -54,17 +67,10 @@
                 <span class="text-base font-bold text-gray-800">Total Pembayaran</span>
                 <span class="text-xl font-black text-forest-700">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
             </div>
-        </div>
-
-        <div id="payment-section" class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-forest-100">
-            <h3 class="text-lg font-bold text-forest-950 mb-4 flex items-center gap-2">
-                <i data-lucide="wallet" class="w-5 h-5 text-forest-600"></i> Metode Pembayaran
-            </h3>
-            <p class="text-sm text-gray-500 mb-6">Silakan pilih metode pembayaran di bawah ini:</p>
             <div id="snap-container" class="flex justify-center">
                 <button id="pay-button" class="px-8 py-4 bg-forest-600 hover:bg-forest-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-forest-500/20 text-base flex items-center gap-3">
                     <i data-lucide="credit-card" class="w-5 h-5"></i>
-                    Pilih Metode Pembayaran
+                    Bayar
                 </button>
             </div>
         </div>

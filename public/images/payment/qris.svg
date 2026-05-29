@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <rect width="120" height="40" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="10" y="8" width="24" height="24" rx="4" fill="#E31E26"/>
+  <rect x="20" y="8" width="24" height="24" rx="4" fill="#1A47B8"/>
+  <text x="75" y="25" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="16" fill="#1A1A1A">QRIS</text>
+</svg>

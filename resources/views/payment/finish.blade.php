@@ -46,7 +46,7 @@
                     <a href="{{ route('payment.pay', $visitor->payment_token) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-amber-700 font-bold rounded-xl hover:bg-amber-50 transition-all text-sm">
                         <i data-lucide="credit-card" class="w-4 h-4"></i> Lanjutkan Pembayaran
                     </a>
-                    <button type="button" onclick="document.getElementById('modal-change-method').classList.remove('hidden')" class="inline-flex items-center gap-2 px-6 py-3 bg-white/20 text-white font-bold rounded-xl hover:bg-white/30 transition-all text-sm border border-white/30">
+                    <button type="button" onclick="openChangeMethodModal()" class="inline-flex items-center gap-2 px-6 py-3 bg-white/20 text-white font-bold rounded-xl hover:bg-white/30 transition-all text-sm border border-white/30">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ganti Metode Pembayaran
                     </button>
                 </div>
@@ -85,7 +85,7 @@
                     <a href="{{ route('payment.pay', $visitor->payment_token) }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-red-700 font-bold rounded-xl hover:bg-red-50 transition-all text-sm">
                         <i data-lucide="refresh-ccw" class="w-4 h-4"></i> Coba Lagi
                     </a>
-                    <button type="button" onclick="document.getElementById('modal-change-method').classList.remove('hidden')" class="inline-flex items-center gap-2 px-6 py-3 bg-white/20 text-white font-bold rounded-xl hover:bg-white/30 transition-all text-sm border border-white/30">
+                    <button type="button" onclick="openChangeMethodModal()" class="inline-flex items-center gap-2 px-6 py-3 bg-white/20 text-white font-bold rounded-xl hover:bg-white/30 transition-all text-sm border border-white/30">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ganti Metode Pembayaran
                     </button>
                 </div>
@@ -173,8 +173,8 @@
 
 {{-- Modal Ganti Metode Pembayaran --}}
 <div id="modal-change-method" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-md mx-4 shadow-2xl">
-        <div class="flex items-center justify-between mb-5">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
             <h3 class="font-bold text-gray-900 text-lg">Ganti Metode Pembayaran</h3>
             <button type="button" onclick="document.getElementById('modal-change-method').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors">
                 <i data-lucide="x" class="w-5 h-5"></i>
@@ -182,21 +182,70 @@
         </div>
         <form action="{{ route('payment.change-method', $visitor->payment_token) }}" method="POST">
             @csrf
-            <div class="space-y-3 mb-6">
-                <label class="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-forest-500 transition-all has-[:checked]:bg-forest-50 has-[:checked]:border-forest-600">
-                    <input type="radio" name="payment_method" value="Transfer" class="text-forest-600 focus:ring-forest-500" checked>
-                    <div>
-                        <span class="font-semibold text-gray-800 text-sm">Transfer / QRIS</span>
-                        <p class="text-xs text-gray-400">Bayar via transfer virtual account atau scan QR</p>
+            <div class="max-h-[45vh] overflow-y-auto pr-1 space-y-4 mb-4">
+                @php
+                    $midtransService = new \App\Services\MidtransService();
+                    $paymentMethods = $midtransService->getPaymentMethods();
+                    $currentMethod = $visitor->payment_method ?? 'qris';
+                @endphp
+
+                @foreach($paymentMethods as $groupCode => $group)
+                    <div class="bg-gray-50/50 border border-gray-200/80 rounded-2xl p-4 space-y-3">
+                        <div class="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <span>{{ $group['name'] }}</span>
+                            <span>
+                                Biaya: 
+                                {{ $group['fee']['type'] === 'fix' 
+                                    ? 'Rp ' . number_format($group['fee']['amount'], 0, ',', '.') 
+                                    : ($group['fee']['percentage'] * 100) . '%' }}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach($group['methods'] as $method)
+                                @php
+                                    $isSelected = strtolower($currentMethod) === strtolower($method['code']);
+                                    $feeType = $group['fee']['type'];
+                                    $feeAmount = $group['fee']['type'] === 'fix' ? $group['fee']['amount'] : $group['fee']['percentage'];
+                                @endphp
+                                <label class="relative flex flex-col items-center justify-center p-3.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-forest-500 hover:bg-forest-50/20 transition-all text-center select-none has-[:checked]:border-forest-600 has-[:checked]:bg-forest-50/40">
+                                    <input type="radio" name="payment_method" value="{{ $method['code'] }}" 
+                                           data-fee-type="{{ $feeType }}" 
+                                           data-fee-amount="{{ $feeAmount }}"
+                                           data-method-name="{{ $method['name'] }}"
+                                           class="absolute right-2 top-2 w-4 h-4 text-forest-600 focus:ring-forest-500" 
+                                           {{ $isSelected ? 'checked' : '' }}>
+                                    
+                                    <img src="{{ $method['icon'] }}" alt="{{ $method['name'] }}" class="w-10 h-7 object-contain mb-2">
+                                    <span class="text-[11px] font-semibold text-gray-800 leading-tight">{{ $method['name'] }}</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
-                </label>
+                @endforeach
             </div>
+
+            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-5 space-y-2 text-xs">
+                <div class="flex justify-between text-gray-500">
+                    <span>Harga Tiket:</span>
+                    <span class="font-bold text-gray-800">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between text-gray-500">
+                    <span id="modal-fee-label">Biaya Admin:</span>
+                    <span id="modal-fee-amount" class="font-bold text-gray-800">Rp 0</span>
+                </div>
+                <div class="flex justify-between items-center text-sm font-bold text-gray-800 pt-2 border-t border-gray-200/60 mt-1">
+                    <span>Total Bayar:</span>
+                    <span id="modal-total-amount" class="text-forest-700 font-extrabold text-base">Rp 0</span>
+                </div>
+            </div>
+
             <div class="flex gap-3">
                 <button type="button" onclick="document.getElementById('modal-change-method').classList.add('hidden')" class="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all text-sm">
                     Batal
                 </button>
-                <button type="submit" class="w-full py-3 bg-forest-600 hover:bg-forest-700 text-white font-bold rounded-xl transition-all text-sm">
-                    Simpan & Lanjutkan
+                <button type="submit" class="w-full py-3 bg-forest-600 hover:bg-forest-700 text-white font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Ganti & Bayar
                 </button>
             </div>
         </form>
@@ -204,5 +253,50 @@
 </div>
 <script>
     lucide.createIcons();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('modal-change-method');
+        const radios = modal.querySelectorAll('input[name="payment_method"]');
+        const subtotal = {{ (int) $totalAmount }};
+        
+        function formatRupiah(number) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(number);
+        }
+        
+        function updateModalCalculation() {
+            const checkedRadio = modal.querySelector('input[name="payment_method"]:checked');
+            if (!checkedRadio) return;
+            
+            const feeType = checkedRadio.getAttribute('data-fee-type');
+            const feeAmount = parseFloat(checkedRadio.getAttribute('data-fee-amount')) || 0;
+            const methodName = checkedRadio.getAttribute('data-method-name');
+            
+            let adminFee = 0;
+            if (feeType === 'fix') {
+                adminFee = feeAmount;
+                document.getElementById('modal-fee-label').textContent = 'Biaya Admin ' + methodName;
+            } else {
+                adminFee = Math.round(subtotal * feeAmount);
+                document.getElementById('modal-fee-label').textContent = 'Biaya Admin ' + methodName + ' (' + (feeAmount * 100) + '%)';
+            }
+            
+            const total = subtotal + adminFee;
+            document.getElementById('modal-fee-amount').textContent = formatRupiah(adminFee);
+            document.getElementById('modal-total-amount').textContent = formatRupiah(total);
+        }
+        
+        radios.forEach(radio => {
+            radio.addEventListener('change', updateModalCalculation);
+        });
+        
+        // Initial calculation
+        updateModalCalculation();
+        
+        // Expose function to global scope
+        window.openChangeMethodModal = function() {
+            modal.classList.remove('hidden');
+            updateModalCalculation();
+        };
+    });
 </script>
 @endsection

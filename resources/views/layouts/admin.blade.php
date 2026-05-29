@@ -23,8 +23,102 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    
+    <!-- jsQR for QR Code Scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    
+    <!-- NProgress for Global Loading Bar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css">
+    <style>
+        #nprogress .bar {
+            background: #059669 !important;
+            height: 3px !important;
+        }
+        #nprogress .peg {
+            box-shadow: 0 0 10px #059669, 0 0 5px #059669 !important;
+        }
+        #nprogress .spinner-icon {
+            border-top-color: #059669 !important;
+            border-left-color: #059669 !important;
+        }
+
+        /* Premium Global Loading Overlay styles */
+        #global-loading-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 999999 !important;
+            background-color: rgba(15, 23, 42, 0.65) !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+            display: none !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.3s ease !important;
+            pointer-events: auto !important;
+        }
+        #global-loading-overlay.active {
+            display: flex !important;
+        }
+        .loading-card {
+            background: #ffffff !important;
+            border-radius: 24px !important;
+            padding: 32px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(241, 245, 249, 0.8) !important;
+            max-width: 320px !important;
+            width: 90% !important;
+            text-align: center !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 16px !important;
+            animation: loaderScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        @keyframes loaderScaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .spinner-ring {
+            position: relative !important;
+            width: 64px !important;
+            height: 64px !important;
+        }
+        .spinner-ring::before {
+            content: '' !important;
+            position: absolute !important;
+            inset: 0 !important;
+            border-radius: 50% !important;
+            border: 4px solid #f1f5f9 !important;
+        }
+        .spinner-ring::after {
+            content: '' !important;
+            position: absolute !important;
+            inset: 0 !important;
+            border-radius: 50% !important;
+            border: 4px solid transparent !important;
+            border-top-color: #059669 !important;
+            border-left-color: #059669 !important;
+            animation: spin-custom 0.8s linear infinite !important;
+        }
+        @keyframes spin-custom {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900">
+    <!-- Global Loading Overlay -->
+    <div id="global-loading-overlay">
+        <div class="loading-card">
+            <div class="spinner-ring"></div>
+            <div>
+                <h4 style="font-weight: 800; color: #1e293b; font-size: 14px; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">Sedang Memproses...</h4>
+            </div>
+        </div>
+    </div>
 
     <div class="flex h-screen overflow-hidden">
         {{-- Mobile Sidebar Backdrop --}}
@@ -481,5 +575,66 @@
         });
     </script>
     @stack('scripts')
+    
+    <!-- NProgress JS and Global Progress Bar Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+    <script>
+        window.showLoading = function() {
+            const overlay = document.getElementById('global-loading-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+            }
+            NProgress.start();
+        };
+
+        window.hideLoading = function() {
+            const overlay = document.getElementById('global-loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            NProgress.done();
+        };
+
+        // Start loader on page unload (actual full-page navigation)
+        window.addEventListener('beforeunload', function() {
+            window.showLoading();
+        });
+
+        // Start loader on form submission (if not prevented)
+        document.addEventListener('submit', function(e) {
+            if (!e.defaultPrevented) {
+                window.showLoading();
+            }
+        });
+
+        // Intercept link clicks — only for actual page navigations, NOT section anchors
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+            
+            const href = link.getAttribute('href');
+            const target = link.getAttribute('target');
+            
+            // Skip non-navigation links
+            if (!href) return;
+            if (target === '_blank') return;
+            if (href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+            if (link.hasAttribute('data-no-loader')) return;
+            
+            // Skip any link that contains a hash (section anchor)
+            if (href.startsWith('#')) return;
+            if (href.includes('#')) {
+                try {
+                    const linkUrl = new URL(href, window.location.origin);
+                    // Same page with different hash = section scroll, skip
+                    if (linkUrl.pathname === window.location.pathname && linkUrl.origin === window.location.origin) {
+                        return;
+                    }
+                } catch(ex) { /* malformed URL, let it pass */ }
+            }
+            
+            window.showLoading();
+        });
+    </script>
 </body>
 </html>

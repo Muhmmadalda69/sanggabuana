@@ -640,7 +640,7 @@ class DashboardController extends Controller
         // Fetch visitors grouped by group_id
         $query = Visitor::where('destination_id', $destination->id);
 
-        // Optional search filter
+        // Optional search filter (combined search and QR scan)
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
@@ -677,7 +677,7 @@ class DashboardController extends Controller
         // Load all visitors for these groups
         $groupedVisitors = Visitor::where('destination_id', $destination->id)
             ->whereIn('group_id', $pagedGroupIds)
-            ->orderBy('checked_in_at')
+            ->orderBy('id', 'asc')
             ->get()
             ->groupBy('group_id');
 

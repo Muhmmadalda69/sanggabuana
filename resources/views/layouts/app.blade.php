@@ -19,8 +19,154 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    
+    <!-- NProgress for Global Loading Bar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css">
+    <style>
+        #nprogress .bar {
+            background: #059669 !important;
+            height: 3px !important;
+        }
+        #nprogress .peg {
+            box-shadow: 0 0 10px #059669, 0 0 5px #059669 !important;
+        }
+        #nprogress .spinner-icon {
+            border-top-color: #059669 !important;
+            border-left-color: #059669 !important;
+        }
+
+        /* Premium Global Loading Overlay styles */
+        #global-loading-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 999999 !important;
+            background-color: rgba(15, 23, 42, 0.65) !important; /* Slate 900 semi-transparent */
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+            display: none !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.3s ease !important;
+            pointer-events: auto !important; /* Block all clicks underneath */
+        }
+        #global-loading-overlay.active {
+            display: flex !important;
+        }
+        .loading-card {
+            background: #ffffff !important;
+            border-radius: 24px !important;
+            padding: 32px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(241, 245, 249, 0.8) !important;
+            max-width: 320px !important;
+            width: 90% !important;
+            text-align: center !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 16px !important;
+            animation: loaderScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        @keyframes loaderScaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .mountain-svg {
+            width: 80px !important;
+            height: 64px !important;
+            animation: mountainPulse 2s ease-in-out infinite !important;
+        }
+        .mountain-path {
+            fill: none !important;
+            stroke: #059669 !important;
+            stroke-width: 3 !important;
+            stroke-linecap: round !important;
+            stroke-linejoin: round !important;
+            stroke-dasharray: 0 !important;
+            stroke-dashoffset: 0 !important;
+            animation: drawMountain 2.5s ease-in-out infinite !important;
+        }
+        .mountain-path-bg {
+            fill: none !important;
+            stroke: #d1fae5 !important;
+            stroke-width: 3 !important;
+            stroke-linecap: round !important;
+            stroke-linejoin: round !important;
+            opacity: 0.3 !important;
+        }
+        @keyframes drawMountain {
+            0% {
+                stroke-dasharray: 0 300;
+                opacity: 1;
+            }
+            20% {
+                stroke-dasharray: 60 300;
+            }
+            40% {
+                stroke-dasharray: 120 300;
+            }
+            60% {
+                stroke-dasharray: 180 300;
+            }
+            80% {
+                stroke-dasharray: 240 300;
+            }
+            100% {
+                stroke-dasharray: 300 300;
+                opacity: 1;
+            }
+        }
+        @keyframes mountainPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        .loading-dots .dot {
+            width: 6px !important;
+            height: 6px !important;
+            background: #059669 !important;
+            border-radius: 50% !important;
+            display: inline-block !important;
+            animation: dotBounce 1.4s infinite ease-in-out both !important;
+        }
+        @keyframes dotBounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body class="font-sans antialiased bg-forest-50 text-forest-950">
+    <!-- Global Loading Overlay -->
+    <div id="global-loading-overlay">
+        <div class="loading-card">
+            <svg class="mountain-svg" viewBox="0 0 80 64" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background path (faint outline) -->
+                <polyline class="mountain-path-bg" points="4,60 30,12 40,24 56,8 76,60 4,60"/>
+                <!-- Animated drawing path -->
+                <polyline class="mountain-path" points="4,60 30,12 40,24 56,8 76,60 4,60"/>
+            </svg>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+                <!-- <h4 style="font-weight: 800; color: #1e293b; font-size: 14px; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; display: inline;">Sedang Memproses</h4> -->
+                <span class="loading-dots" style="display: inline-flex; gap: 4px; margin-left: 2px;">
+                    <span class="dot" style="animation-delay: 0s;"></span>
+                    <span class="dot" style="animation-delay: 0.2s;"></span>
+                    <span class="dot" style="animation-delay: 0.4s;"></span>
+                </span>
+            </div>
+        </div>
+    </div>
 
     {{-- Navigation --}}
     <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 {{ request()->routeIs('home') ? 'bg-transparent' : 'navbar-scroll' }}">
@@ -353,5 +499,81 @@
         @endif
     </script>
     @stack('scripts')
+    
+    <!-- NProgress JS and Global Progress Bar Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+    <script>
+        window.showLoading = function() {
+            const overlay = document.getElementById('global-loading-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+            }
+            NProgress.start();
+        };
+
+        window.hideLoading = function() {
+            const overlay = document.getElementById('global-loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            NProgress.done();
+            NProgress.remove();
+        };
+
+        // Hide loading when page is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            window.hideLoading();
+        });
+
+        window.addEventListener('load', function() {
+            window.hideLoading();
+        });
+
+        // Start loader on page unload (actual full-page navigation)
+        window.addEventListener('beforeunload', function() {
+            window.showLoading();
+        });
+
+        // Start loader on form submission (if not prevented)
+        document.addEventListener('submit', function(e) {
+            if (!e.defaultPrevented) {
+                window.showLoading();
+            }
+        });
+
+        // Intercept link clicks — only for actual page navigations, NOT section anchors
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+            
+            const href = link.getAttribute('href');
+            const target = link.getAttribute('target');
+            
+            // Skip non-navigation links
+            if (!href) return;
+            if (target === '_blank') return;
+            if (href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+            if (link.hasAttribute('data-no-loader')) return;
+            
+            // Skip any link that contains a hash (section anchor)
+            if (href.startsWith('#')) return;
+            if (href.includes('#')) {
+                try {
+                    const linkUrl = new URL(href, window.location.origin);
+                    // Same page with different hash = section scroll, skip
+                    if (linkUrl.pathname === window.location.pathname && linkUrl.origin === window.location.origin) {
+                        return;
+                    }
+                } catch(ex) { /* malformed URL, let it pass */ }
+            }
+            
+            window.showLoading();
+        });
+        
+        // Auto-hide loading if stuck for more than 5 seconds
+        setTimeout(function() {
+            window.hideLoading();
+        }, 5000);
+    </script>
 </body>
 </html>
