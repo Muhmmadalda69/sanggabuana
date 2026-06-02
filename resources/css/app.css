@@ -40,6 +40,10 @@
 /* Smooth scroll */
 html { scroll-behavior: smooth; }
 
+button{
+    cursor: pointer;
+}
+
 /* Hero parallax effect */
 .hero-gradient {
     background: linear-gradient(

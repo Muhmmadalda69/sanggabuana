@@ -1173,31 +1173,30 @@
                     VA: {
                         name: 'Virtual Account',
                         methods: [
-                            {code: 'bca', name: 'BCA VA', icon: '/images/payment/bca.svg', feeType: 'fix', feeAmount: 10000},
-                            {code: 'bni', name: 'BNI VA', icon: '/images/payment/bni.svg', feeType: 'fix', feeAmount: 10000},
-                            {code: 'bri', name: 'BRI VA', icon: '/images/payment/bri.svg', feeType: 'fix', feeAmount: 10000},
-                            {code: 'mandiri', name: 'Mandiri Bill', icon: '/images/payment/mandiri.svg', feeType: 'fix', feeAmount: 10000},
-                            {code: 'permata', name: 'Permata VA', icon: '/images/payment/permata.svg', feeType: 'fix', feeAmount: 10000}
+                            {code: 'bca', name: 'BCA VA', icon: '/images/payment/bca.png', feeType: 'fix', feeAmount: 10000},
+                            {code: 'bni', name: 'BNI VA', icon: '/images/payment/bni.jpg', feeType: 'fix', feeAmount: 10000},
+                            {code: 'bri', name: 'BRI VA', icon: '/images/payment/bri.jpg', feeType: 'fix', feeAmount: 10000},
+                            {code: 'mandiri', name: 'Mandiri Bill', icon: '/images/payment/mandiri.png', feeType: 'fix', feeAmount: 10000},
+                            {code: 'permata', name: 'Permata VA', icon: '/images/payment/permata.png', feeType: 'fix', feeAmount: 10000}
                         ]
                     },
                     QRIS: {
                         name: 'QRIS',
                         methods: [
-                            {code: 'qris', name: 'QRIS', icon: '/images/payment/qris.svg', feeType: 'percentage', feeAmount: 0.02}
+                            {code: 'qris', name: 'QRIS', icon: '/images/payment/qris.png', feeType: 'percentage', feeAmount: 0.02}
                         ]
                     },
                     EWALLET: {
                         name: 'E-Money',
                         methods: [
-                            {code: 'gopay', name: 'GoPay', icon: '/images/payment/gopay.svg', feeType: 'percentage', feeAmount: 0.05},
-                            {code: 'shopeepay', name: 'ShopeePay', icon: '/images/payment/shopeepay.svg', feeType: 'percentage', feeAmount: 0.05},
+                            {code: 'gopay', name: 'GoPay', icon: '/images/payment/gopay.png', feeType: 'percentage', feeAmount: 0.05},
+                            {code: 'shopeepay', name: 'ShopeePay', icon: '/images/payment/shopeepay.png', feeType: 'percentage', feeAmount: 0.05},
                         ]
                     },
                     ALFAMART: {
                         name: 'Convenience Store',
                         methods: [
                             {code: 'alfamart', name: 'Alfamart', icon: '/images/payment/alfamart.svg', feeType: 'fix', feeAmount: 10000},
-                            {code: 'indomaret', name: 'Indomaret', icon: '/images/payment/indomaret.svg', feeType: 'fix', feeAmount: 10000}
                         ]
                     }
                 };
