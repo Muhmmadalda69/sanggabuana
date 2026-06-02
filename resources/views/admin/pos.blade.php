@@ -276,9 +276,17 @@
                                 <i data-lucide="mountain" class="w-4.5 h-4.5"></i>
                             </span>
                             <select name="purpose" id="purpose" required class="w-full pl-12 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all appearance-none cursor-pointer">
-                                <option value="Hiking">Hiking &amp; Camping</option>
-                                <option value="Trail Run">Trail Running / Olahraga</option>
-                                <option value="Jiarah">Wisata Religi / Ziarah</option>
+                                @foreach($destination->active_purposes as $purp)
+                                    @php
+                                        $customPrice = ($purp->pivot && $purp->pivot->has_custom_price) ? (int)$purp->pivot->custom_price : (int)$destination->price;
+                                        $isCamping = strtolower($purp->slug) === 'camping' || strtolower($purp->name) === 'camping';
+                                    @endphp
+                                    <option value="{{ $purp->name }}" 
+                                            data-price="{{ $customPrice }}" 
+                                            data-is-camping="{{ $isCamping ? 'true' : 'false' }}">
+                                        {{ $purp->name }}
+                                    </option>
+                                @endforeach
                             </select>
                             <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 pointer-events-none">
                                 <i data-lucide="chevron-down" class="w-4 h-4"></i>
@@ -439,11 +447,18 @@
                 </div>
                 
                 {{-- Manual Price / HTM Override --}}
+                @php
+                    $defaultPrice = $destination->price;
+                    if ($destination->has_purpose && $destination->active_purposes->isNotEmpty()) {
+                        $firstPurp = $destination->active_purposes->first();
+                        $defaultPrice = ($firstPurp->pivot && $firstPurp->pivot->has_custom_price) ? $firstPurp->pivot->custom_price : $destination->price;
+                    }
+                @endphp
                 <div>
                     <label for="price" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Harga Per Tiket (HTM) <span class="text-[9px] font-normal text-forest-600">(Dapat Diubah)</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 font-bold text-sm">Rp</span>
-                        <input type="number" name="price" id="price" value="{{ (int) $destination->price }}" min="0" required class="w-full pl-12 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:border-forest-500 transition-all">
+                        <input type="number" name="price" id="price" value="{{ (int) $defaultPrice }}" min="0" required class="w-full pl-12 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:border-forest-500 transition-all">
                     </div>
                 </div>
             </div>
@@ -454,11 +469,11 @@
                 <div class="lg:col-span-2 bg-forest-50/30 rounded-xl p-4 border border-forest-100 flex flex-col gap-1">
                     <div class="flex items-center justify-between text-xs text-gray-500">
                         <span>Harga Tiket Satuan:</span>
-                        <span class="font-semibold">Rp {{ number_format($destination->price, 0, ',', '.') }}</span>
+                        <span class="font-semibold" id="pos-unit-price">Rp {{ number_format($defaultPrice, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex items-center justify-between text-sm font-black text-gray-800 border-t border-gray-200/80 pt-2">
                         <span>Total Estimasi Bayar:</span>
-                        <span id="pos-total-pay" class="text-forest-700 text-lg">Rp {{ number_format($destination->price, 0, ',', '.') }}</span>
+                        <span id="pos-total-pay" class="text-forest-700 text-lg">Rp {{ number_format($defaultPrice, 0, ',', '.') }}</span>
                     </div>
                 </div>
                 
@@ -671,10 +686,21 @@
         }
 
         function calculatePOS() {
+            // Apply camping duration multiplication if Camping is active
+            const campingDurationInput = document.getElementById('camping_duration');
+            const isCampingSelected = purposeSelect && purposeSelect.options[purposeSelect.selectedIndex]?.getAttribute('data-is-camping') === 'true';
+            const duration = (isCampingSelected && campingDurationInput && !campingDurationInput.disabled) ? (parseInt(campingDurationInput.value) || 1) : 1;
+
             let qty = 1;
-            let currentPrice = parseInt(inputPrice.value) || 0;
+            let baseTicketPrice = parseInt(inputPrice.value) || 0;
+            let currentPrice = baseTicketPrice * duration;
             const kidsDiscount = parseInt(document.getElementById('ticket-kids-discount')?.value || '0');
             const kidsPrice = kidsDiscount > 0 ? Math.round(currentPrice * (1 - kidsDiscount / 100)) : currentPrice;
+
+            const posUnitPrice = document.getElementById('pos-unit-price');
+            if (posUnitPrice) {
+                posUnitPrice.innerText = formatRupiah(currentPrice);
+            }
 
             const hasMemberDetails = {{ $destination->has_member_details ? 'true' : 'false' }};
             if (hasMemberDetails) {
@@ -704,6 +730,7 @@
                 return;
             }
         }
+        window.calculatePOS = calculatePOS;
 
         // TomSelect instances
         let tsProvince = null;
@@ -939,20 +966,37 @@
 
         function handlePurposeChange() {
             if (!purposeSelect || !campingDurationContainer) return;
-            if (purposeSelect.value === 'Hiking') {
+            const selectedOpt = purposeSelect.options[purposeSelect.selectedIndex];
+            const isCamping = selectedOpt ? selectedOpt.getAttribute('data-is-camping') === 'true' : false;
+
+            if (isCamping) {
                 campingDurationContainer.classList.remove('hidden');
                 if (campingDurationInput) campingDurationInput.disabled = false;
             } else {
                 campingDurationContainer.classList.add('hidden');
                 if (campingDurationInput) campingDurationInput.disabled = true;
             }
+
+            // Update manual price input field dynamically!
+            if (selectedOpt && inputPrice) {
+                const targetPrice = selectedOpt.getAttribute('data-price');
+                if (targetPrice) {
+                    inputPrice.value = targetPrice;
+                }
+            }
+
+            calculatePOS();
         }
 
-        // Add event listeners for dynamic calculation
         if (qtyMaleInput) qtyMaleInput.addEventListener('input', calculatePOS);
         if (qtyFemaleInput) qtyFemaleInput.addEventListener('input', calculatePOS);
         if (qtyKidsInput) qtyKidsInput.addEventListener('input', calculatePOS);
         if (inputPrice) inputPrice.addEventListener('input', calculatePOS);
+        if (campingDurationInput) {
+            campingDurationInput.addEventListener('input', calculatePOS);
+            campingDurationInput.addEventListener('change', calculatePOS);
+            campingDurationInput.addEventListener('keyup', calculatePOS);
+        }
         if (addressTypeSelect) addressTypeSelect.addEventListener('change', handleAddressTypeChange);
         const leaderAddressTypeEl = document.getElementById('leader_address_type');
         if (leaderAddressTypeEl) leaderAddressTypeEl.addEventListener('change', handleLeaderAddressTypeChange);

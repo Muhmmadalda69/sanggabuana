@@ -28,7 +28,11 @@ class DestinationController extends Controller
             abort(403, 'Kasir tidak diperbolehkan membuat destinasi baru.');
         }
 
-        return view('admin.destinations.form', ['destination' => new Destination()]);
+        $purposes = \App\Models\Purpose::orderBy('name')->get();
+        return view('admin.destinations.form', [
+            'destination' => new Destination(),
+            'purposes' => $purposes
+        ]);
     }
 
     public function store(Request $request)
@@ -61,6 +65,9 @@ class DestinationController extends Controller
             'has_gender_details' => 'nullable|boolean',
             'has_member_details' => 'nullable|boolean',
             'has_online_registration' => 'nullable|boolean',
+            'purposes' => 'nullable|array',
+            'purposes.*.has_custom_price' => 'nullable|boolean',
+            'purposes.*.custom_price' => 'nullable|numeric|min:0',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -91,7 +98,24 @@ class DestinationController extends Controller
             $validated['image'] = $request->file('image')->store('destinations', 'public');
         }
 
-        Destination::create($validated);
+        $destination = Destination::create($validated);
+
+        // Handle visit purposes custom pricing
+        // Sync ALL purposes shown in the form (global + explicitly mapped)
+        $purposesInput = $request->input('purposes', []);
+        $syncData = [];
+        foreach ($purposesInput as $purposeId => $pivotData) {
+            $hasCustomPrice = isset($pivotData['has_custom_price']) && $pivotData['has_custom_price'] == '1';
+            $customPrice = $hasCustomPrice ? (float) ($pivotData['custom_price'] ?? 0) : 0;
+
+            if (\App\Models\Purpose::find($purposeId)) {
+                $syncData[$purposeId] = [
+                    'has_custom_price' => $hasCustomPrice,
+                    'custom_price' => $customPrice,
+                ];
+            }
+        }
+        $destination->purposes()->sync($syncData);
 
         return redirect()->route('admin.destinations.index')
             ->with('success', 'Destinasi berhasil ditambahkan!');
@@ -103,7 +127,8 @@ class DestinationController extends Controller
             abort(403, 'Anda tidak memiliki hak akses untuk mengedit destinasi ini.');
         }
 
-        return view('admin.destinations.form', compact('destination'));
+        $purposes = \App\Models\Purpose::orderBy('name')->get();
+        return view('admin.destinations.form', compact('destination', 'purposes'));
     }
 
     public function update(Request $request, Destination $destination)
@@ -136,6 +161,9 @@ class DestinationController extends Controller
             'has_gender_details' => 'nullable|boolean',
             'has_member_details' => 'nullable|boolean',
             'has_online_registration' => 'nullable|boolean',
+            'purposes' => 'nullable|array',
+            'purposes.*.has_custom_price' => 'nullable|boolean',
+            'purposes.*.custom_price' => 'nullable|numeric|min:0',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -171,6 +199,23 @@ class DestinationController extends Controller
         }
 
         $destination->update($validated);
+
+        // Handle visit purposes custom pricing
+        // Sync ALL purposes shown in the form (global + explicitly mapped)
+        $purposesInput = $request->input('purposes', []);
+        $syncData = [];
+        foreach ($purposesInput as $purposeId => $pivotData) {
+            $hasCustomPrice = isset($pivotData['has_custom_price']) && $pivotData['has_custom_price'] == '1';
+            $customPrice = $hasCustomPrice ? (float) ($pivotData['custom_price'] ?? 0) : 0;
+
+            if (\App\Models\Purpose::find($purposeId)) {
+                $syncData[$purposeId] = [
+                    'has_custom_price' => $hasCustomPrice,
+                    'custom_price' => $customPrice,
+                ];
+            }
+        }
+        $destination->purposes()->sync($syncData);
 
         if (auth()->user()->isKasir()) {
             return redirect()->route('admin.destinations.edit', $destination->id)

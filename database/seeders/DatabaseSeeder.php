@@ -154,5 +154,13 @@ class DatabaseSeeder extends Seeder
             'meta_description' => 'Syarat dan ketentuan pengunjung Wisata Gunung Sanggabuana.',
             'is_active' => true,
         ]);
+
+        // 5. Seed Visit Purposes
+        $this->call(PurposeSeeder::class);
     }
 }
+
+
+
+
+

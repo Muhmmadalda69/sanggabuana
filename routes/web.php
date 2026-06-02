@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\PurposeController;
 use App\Http\Middleware\AdminAuth;
 use Illuminate\Support\Facades\Route;
 
@@ -115,6 +116,7 @@ Route::prefix('admin')->name('admin.')->middleware(AdminAuth::class)->group(func
     // RBAC routes - only accessible by superadmin role
     Route::middleware('superadmin')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
+        Route::resource('purposes', PurposeController::class)->except(['show']);
     });
 
     // Visitor Accounts Management - admin & superadmin

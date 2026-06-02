@@ -180,26 +180,26 @@ class MidtransService
             'VA' => [
                 'name' => 'Virtual Account',
                 'methods' => [
-                    ['code' => 'bca', 'name' => 'BCA Virtual Account', 'icon' => '/images/payment/bca.svg'],
-                    ['code' => 'bni', 'name' => 'BNI Virtual Account', 'icon' => '/images/payment/bni.svg'],
-                    ['code' => 'bri', 'name' => 'BRI Virtual Account', 'icon' => '/images/payment/bri.svg'],
-                    ['code' => 'mandiri', 'name' => 'Mandiri Virtual Account', 'icon' => '/images/payment/mandiri.svg'],
-                    ['code' => 'permata', 'name' => 'Permata Virtual Account', 'icon' => '/images/payment/permata.svg']
+                    ['code' => 'bca', 'name' => 'BCA Virtual Account', 'icon' => '/images/payment/bca.png'],
+                    ['code' => 'bni', 'name' => 'BNI Virtual Account', 'icon' => '/images/payment/bni.jpg'],
+                    ['code' => 'bri', 'name' => 'BRI Virtual Account', 'icon' => '/images/payment/bri.jpg'],
+                    ['code' => 'mandiri', 'name' => 'Mandiri Virtual Account', 'icon' => '/images/payment/mandiri.png'],
+                    ['code' => 'permata', 'name' => 'Permata Virtual Account', 'icon' => '/images/payment/permata.png']
                 ],
                 'fee' => $this->getPaymentFees('VA')
             ],
             'QRIS' => [
                 'name' => 'QRIS',
                 'methods' => [
-                    ['code' => 'qris', 'name' => 'QRIS', 'icon' => '/images/payment/qris.svg']
+                    ['code' => 'qris', 'name' => 'QRIS', 'icon' => '/images/payment/qris.png']
                 ],
                 'fee' => $this->getPaymentFees('qris')
             ],
             'EWALLET' => [
                 'name' => 'E-Money',
                 'methods' => [
-                    ['code' => 'gopay', 'name' => 'GoPay', 'icon' => '/images/payment/gopay.svg'],
-                    ['code' => 'shopeepay', 'name' => 'ShopeePay', 'icon' => '/images/payment/shopeepay.svg']
+                    ['code' => 'gopay', 'name' => 'GoPay', 'icon' => '/images/payment/gopay.png'],
+                    ['code' => 'shopeepay', 'name' => 'ShopeePay', 'icon' => '/images/payment/shopeepay.png']
                 ],
                 'fee' => $this->getPaymentFees('ewallet')
             ],
@@ -211,5 +211,20 @@ class MidtransService
                 'fee' => $this->getPaymentFees('alfamart')
             ]
         ];
+    }
+
+    /**
+     * Verify Midtrans notification signature key using secure timing-attack-safe comparison.
+     */
+    public function verifySignature(object $notification): bool
+    {
+        $orderId = $notification->order_id ?? '';
+        $statusCode = $notification->status_code ?? '';
+        $grossAmount = $notification->gross_amount ?? '';
+        $serverKey = config('midtrans.server_key') ?? '';
+        
+        $calculatedSignature = hash("sha512", $orderId . $statusCode . $grossAmount . $serverKey);
+        
+        return hash_equals($calculatedSignature, $notification->signature_key ?? '');
     }
 }

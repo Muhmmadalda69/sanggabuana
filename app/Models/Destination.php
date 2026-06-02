@@ -42,6 +42,26 @@ class Destination extends Model
         return $this->hasMany(Gallery::class);
     }
 
+    public function purposes()
+    {
+        return $this->belongsToMany(Purpose::class, 'destination_purpose')
+                    ->withPivot('has_custom_price', 'custom_price')
+                    ->withTimestamps();
+    }
+
+    public function getActivePurposesAttribute()
+    {
+        $allGlobal = Purpose::where('is_all_destinations', true)->get();
+        $explicit = $this->purposes;
+
+        $merged = $allGlobal->map(function ($globalPurpose) use ($explicit) {
+            $match = $explicit->firstWhere('id', $globalPurpose->id);
+            return $match ?: $globalPurpose;
+        });
+
+        return $merged->concat($explicit->where('is_all_destinations', false))->unique('id')->values();
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

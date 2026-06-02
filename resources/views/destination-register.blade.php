@@ -398,9 +398,17 @@
                                             </span>
                                             <select name="purpose" id="purpose" required
                                                 class="w-full pl-12 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-forest-500 transition-all appearance-none cursor-pointer bg-white">
-                                                <option value="Hiking">Hiking / Camping</option>
-                                                <option value="Trail Run">Trail Run</option>
-                                                <option value="Jiarah">Ziarah</option>
+                                                @foreach($destination->active_purposes as $purp)
+                                                    @php
+                                                        $customPrice = ($purp->pivot && $purp->pivot->has_custom_price) ? (int)$purp->pivot->custom_price : (int)$destination->price;
+                                                        $isCamping = strtolower($purp->slug) === 'camping' || strtolower($purp->name) === 'camping';
+                                                    @endphp
+                                                    <option value="{{ $purp->name }}" 
+                                                            data-price="{{ $customPrice }}" 
+                                                            data-is-camping="{{ $isCamping ? 'true' : 'false' }}">
+                                                        {{ $purp->name }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                             <span
                                                 class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 pointer-events-none">
@@ -410,10 +418,10 @@
                                     </div>
 
                                     {{-- Camping Duration (Dynamic nested) --}}
-                                    <div class="col-span-1" id="camping-duration-container">
+                                    <div class="col-span-1 hidden transition-all duration-300" id="camping-duration-container">
                                         <label for="camping_duration"
-                                            class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Lama
-                                            Camping <span
+                                            class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Lama Camping 
+                                            <span
                                                 class="text-[10px] text-gray-400 font-normal">(Malam)</span></label>
                                         <div class="relative">
                                             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
@@ -600,8 +608,15 @@
                                         <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500">
                                             <i data-lucide="banknote" class="w-4.5 h-4.5"></i>
                                         </span>
-                                        <input type="text" disabled
-                                            value="Rp {{ number_format($destination->price, 0, ',', '.') }}"
+                                        @php
+                                            $defaultPrice = $destination->price;
+                                            if ($destination->has_purpose && $destination->active_purposes->isNotEmpty()) {
+                                                $firstPurp = $destination->active_purposes->first();
+                                                $defaultPrice = ($firstPurp->pivot && $firstPurp->pivot->has_custom_price) ? $firstPurp->pivot->custom_price : $destination->price;
+                                            }
+                                        @endphp
+                                        <input type="text" id="ticket-price-display" disabled
+                                            value="Rp {{ number_format($defaultPrice, 0, ',', '.') }}"
                                             class="w-full pl-12 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-600">
                                     </div>
                                 </div>
@@ -1065,33 +1080,58 @@
             const purposeSelect = document.getElementById('purpose');
             const campingDurationContainer = document.getElementById('camping-duration-container');
             const campingDurationInput = document.getElementById('camping_duration');
+            let currentBasePrice = basePrice;
 
             function handlePurposeChange() {
                 if (!purposeSelect || !campingDurationContainer) return;
-                if (purposeSelect.value === 'Hiking') {
+                const selectedOpt = purposeSelect.options[purposeSelect.selectedIndex];
+                const isCamping = selectedOpt ? selectedOpt.getAttribute('data-is-camping') === 'true' : false;
+                if (isCamping) {
                     campingDurationContainer.classList.remove('hidden');
                     if (campingDurationInput) campingDurationInput.disabled = false;
                 } else {
                     campingDurationContainer.classList.add('hidden');
                     if (campingDurationInput) campingDurationInput.disabled = true;
                 }
+
+                calculatePOS();
             }
 
         // Replace the calculatePOS function
         function calculatePOS() {
+            if (purposeSelect) {
+                const selectedOpt = purposeSelect.options[purposeSelect.selectedIndex];
+                if (selectedOpt) {
+                    currentBasePrice = parseInt(selectedOpt.getAttribute('data-price')) || basePrice;
+                }
+            }
+
+            // Apply camping duration multiplication if Camping is active
+            const campingDurationInput = document.getElementById('camping_duration');
+            const isCampingSelected = purposeSelect && purposeSelect.options[purposeSelect.selectedIndex]?.getAttribute('data-is-camping') === 'true';
+            const duration = (isCampingSelected && campingDurationInput && !campingDurationInput.disabled) ? (parseInt(campingDurationInput.value) || 1) : 1;
+
             let qty = 1;
+            let currentPrice = currentBasePrice * duration;
+
+            // Update dynamic price display field on screen (HTM)
+            const priceDisplay = document.getElementById('ticket-price-display');
+            if (priceDisplay) {
+                priceDisplay.value = formatRupiah(currentPrice);
+            }
+
             const kidsDiscount = {{ $destination->kids_discount ?? 0 }};
-            const kidsPrice = kidsDiscount > 0 ? Math.round(basePrice * (1 - kidsDiscount / 100)) : basePrice;
+            const kidsPrice = kidsDiscount > 0 ? Math.round(currentPrice * (1 - kidsDiscount / 100)) : currentPrice;
             let ticketTotal = 0;
 
             const hasMemberDetails = {{ $destination->has_member_details ? 'true' : 'false' }};
             if (hasMemberDetails) {
                 const rows = document.querySelectorAll('.member-row');
                 qty = rows.length + 1;
-                ticketTotal = basePrice; // leader full price
+                ticketTotal = currentPrice; // leader full price
                 rows.forEach(row => {
                     const isChild = row.querySelector('select[name*="[is_child]"]')?.value === '1';
-                    ticketTotal += isChild ? kidsPrice : basePrice;
+                    ticketTotal += isChild ? kidsPrice : currentPrice;
                 });
                 if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
                 const calcBadge = document.getElementById('gunung-calc-total-badge');
@@ -1101,7 +1141,7 @@
                 const female = qtyFemaleInput ? (parseInt(qtyFemaleInput.value) || 0) : 0;
                 const kids = qtyKidsInput ? (parseInt(qtyKidsInput.value) || 0) : 0;
                 qty = male + female + kids + 1;
-                ticketTotal = (male + female + 1) * basePrice + kids * kidsPrice;
+                ticketTotal = (male + female + 1) * currentPrice + kids * kidsPrice;
                 if (gunungCalcTotal) gunungCalcTotal.innerText = qty;
                 const calcBadge = document.getElementById('gunung-calc-total-badge');
                 if (calcBadge) calcBadge.innerText = qty;
@@ -1130,6 +1170,11 @@
             if (qtyMaleInput) qtyMaleInput.addEventListener('input', calculatePOS);
             if (qtyFemaleInput) qtyFemaleInput.addEventListener('input', calculatePOS);
             if (qtyKidsInput) qtyKidsInput.addEventListener('input', calculatePOS);
+            if (campingDurationInput) {
+                campingDurationInput.addEventListener('input', calculatePOS);
+                campingDurationInput.addEventListener('change', calculatePOS);
+                campingDurationInput.addEventListener('keyup', calculatePOS);
+            }
             if (addressTypeSelect) addressTypeSelect.addEventListener('change', handleAddressTypeChange);
             if (leaderAddressTypeEl) leaderAddressTypeEl.addEventListener('change', handleLeaderAddressTypeChange);
             if (purposeSelect) purposeSelect.addEventListener('change', handlePurposeChange);
@@ -1167,89 +1212,74 @@
                 });
             }
 
-// Payment Modal Functions - Changed to Accordion
-            function loadPaymentMethodsStatic() {
-                const paymentGroups = {
-                    VA: {
-                        name: 'Virtual Account',
-                        methods: [
-                            {code: 'bca', name: 'BCA VA', icon: '/images/payment/bca.png', feeType: 'fix', feeAmount: 10000},
-                            {code: 'bni', name: 'BNI VA', icon: '/images/payment/bni.jpg', feeType: 'fix', feeAmount: 10000},
-                            {code: 'bri', name: 'BRI VA', icon: '/images/payment/bri.jpg', feeType: 'fix', feeAmount: 10000},
-                            {code: 'mandiri', name: 'Mandiri Bill', icon: '/images/payment/mandiri.png', feeType: 'fix', feeAmount: 10000},
-                            {code: 'permata', name: 'Permata VA', icon: '/images/payment/permata.png', feeType: 'fix', feeAmount: 10000}
-                        ]
-                    },
-                    QRIS: {
-                        name: 'QRIS',
-                        methods: [
-                            {code: 'qris', name: 'QRIS', icon: '/images/payment/qris.png', feeType: 'percentage', feeAmount: 0.02}
-                        ]
-                    },
-                    EWALLET: {
-                        name: 'E-Money',
-                        methods: [
-                            {code: 'gopay', name: 'GoPay', icon: '/images/payment/gopay.png', feeType: 'percentage', feeAmount: 0.05},
-                            {code: 'shopeepay', name: 'ShopeePay', icon: '/images/payment/shopeepay.png', feeType: 'percentage', feeAmount: 0.05},
-                        ]
-                    },
-                    ALFAMART: {
-                        name: 'Convenience Store',
-                        methods: [
-                            {code: 'alfamart', name: 'Alfamart', icon: '/images/payment/alfamart.svg', feeType: 'fix', feeAmount: 10000},
-                        ]
-                    }
-                };
-                
-                paymentMethodsContainer.innerHTML = '';
-                
-                for (const [groupCode, group] of Object.entries(paymentGroups)) {
-                    const groupDiv = document.createElement('div');
-                    groupDiv.className = 'payment-group mb-4';
-                    
-                    const headerDiv = document.createElement('div');
-                    headerDiv.className = 'payment-group-header flex justify-between items-center mb-3';
-                    const feeText = group.methods[0].feeType === 'fix'
-                        ? formatRupiah(group.methods[0].feeAmount)
-                        : Math.round(group.methods[0].feeAmount * 100) + '%';
-                    headerDiv.innerHTML = `
-                        <span class="text-sm font-semibold text-gray-800">${group.name}</span>
-                        <span class="text-xs text-gray-500">Biaya: ${feeText}</span>
-                    `;
-                    
-                    groupDiv.appendChild(headerDiv);
-                    
-                    const methodsDiv = document.createElement('div');
-                    methodsDiv.className = 'payment-methods-grid';
-                    
-                    group.methods.forEach(method => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'payment-method-btn';
-                        btn.dataset.methodCode = method.code;
-                        btn.dataset.methodName = method.name;
-                        btn.dataset.groupCode = groupCode;
-                        btn.dataset.feeType = method.feeType;
-                        btn.dataset.feeAmount = method.feeAmount;
-                        btn.dataset.icon = method.icon;
+// Payment Modal Functions - Dynamic Single Source of Truth
+            function loadPaymentMethods() {
+                fetch("{{ route('payment.methods') }}")
+                    .then(response => response.json())
+                    .then(paymentGroups => {
+                        paymentMethodsContainer.innerHTML = '';
                         
-                        btn.innerHTML = `
-                            <img src="${method.icon}" alt="${method.name}" class="w-10 h-6 object-contain mb-2">
-                            <span class="text-xs font-medium">${method.name}</span>
-                        `;
-                        
-                        btn.addEventListener('click', () => {
-                            document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('selected'));
-                            btn.classList.add('selected');
-                            selectedPaymentMethod = method;
-                        });
-                        
-                        methodsDiv.appendChild(btn);
+                        for (const [groupCode, group] of Object.entries(paymentGroups)) {
+                            const groupDiv = document.createElement('div');
+                            groupDiv.className = 'payment-group mb-4';
+                            
+                            const headerDiv = document.createElement('div');
+                            headerDiv.className = 'payment-group-header flex justify-between items-center mb-3';
+                            
+                            const fee = group.fee;
+                            const feeText = fee.type === 'fix'
+                                ? formatRupiah(fee.amount)
+                                : (fee.percentage * 100) + '%';
+                                
+                            headerDiv.innerHTML = `
+                                <span class="text-sm font-semibold text-gray-800">${group.name}</span>
+                                <span class="text-xs text-gray-500">Biaya: ${feeText}</span>
+                            `;
+                            
+                            groupDiv.appendChild(headerDiv);
+                            
+                            const methodsDiv = document.createElement('div');
+                            methodsDiv.className = 'payment-methods-grid';
+                            
+                            group.methods.forEach(method => {
+                                const btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = 'payment-method-btn';
+                                btn.dataset.methodCode = method.code;
+                                btn.dataset.methodName = method.name;
+                                btn.dataset.groupCode = groupCode;
+                                btn.dataset.feeType = fee.type;
+                                btn.dataset.feeAmount = fee.type === 'fix' ? fee.amount : fee.percentage;
+                                btn.dataset.icon = method.icon;
+                                
+                                btn.innerHTML = `
+                                    <img src="${method.icon}" alt="${method.name}" class="w-10 h-6 object-contain mb-2">
+                                    <span class="text-xs font-medium">${method.name}</span>
+                                `;
+                                
+                                btn.addEventListener('click', () => {
+                                    document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('selected'));
+                                    btn.classList.add('selected');
+                                    selectedPaymentMethod = {
+                                        code: method.code,
+                                        name: method.name,
+                                        groupCode: groupCode,
+                                        feeType: fee.type,
+                                        feeAmount: fee.type === 'fix' ? fee.amount : fee.percentage,
+                                        icon: method.icon
+                                    };
+                                });
+                                
+                                methodsDiv.appendChild(btn);
+                            });
+                            
+                            groupDiv.appendChild(methodsDiv);
+                            paymentMethodsContainer.appendChild(groupDiv);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Gagal memuat metode pembayaran:', error);
                     });
-                    
-                    groupDiv.appendChild(methodsDiv);
-                    paymentMethodsContainer.appendChild(groupDiv);
-                }
             }
             
             // Accordion Toggle Function
@@ -1326,7 +1356,7 @@
             }
             
             // Initialize payment methods
-            loadPaymentMethodsStatic();
+            loadPaymentMethods();
             
             // Add event listeners for calculation
             addEventListeners();

@@ -10,12 +10,20 @@ use App\Models\PendingRegistration;
 use App\Models\Setting;
 use App\Models\Testimonial;
 use App\Models\Visitor;
+use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class HomeController extends Controller
 {
+    protected $booking;
+
+    public function __construct(BookingService $booking)
+    {
+        $this->booking = $booking;
+    }
+
     public function index()
     {
         $featuredDestinations = Destination::active()->featured()
@@ -188,14 +196,8 @@ class HomeController extends Controller
         }
 
         // Check quota
-        if ($destination->daily_quota) {
-            $booked = Visitor::where('destination_id', $destination->id)
-                ->where('visit_date', $date)
-                ->whereIn('status', ['pending', 'in'])
-                ->sum('qty_total');
-            if ($booked >= $destination->daily_quota) {
-                return redirect()->route('destination.register.date', $slug)->with('error', 'Kuota untuk tanggal ' . Carbon::parse($date)->translatedFormat('d F Y') . ' sudah penuh.');
-            }
+        if (!$this->booking->checkQuota($destination, $date, 1)) {
+            return redirect()->route('destination.register.date', $slug)->with('error', 'Kuota untuk tanggal ' . Carbon::parse($date)->translatedFormat('d F Y') . ' sudah penuh.');
         }
 
         return view('destination-register', compact('destination', 'date'));
@@ -236,8 +238,11 @@ class HomeController extends Controller
             ];
 
             if ($destination->has_purpose) {
-                $rules['purpose'] = 'required|string|in:Hiking,Trail Run,Jiarah';
-                if ($request->input('purpose') === 'Hiking') {
+                $allowedPurposes = $destination->active_purposes->map(function($p) {
+                    return $p->name === 'Ziarah' ? ['Jiarah', 'Ziarah'] : [$p->name];
+                })->flatten()->unique()->toArray();
+                $rules['purpose'] = 'required|string|in:' . implode(',', $allowedPurposes);
+                if (in_array(strtolower($request->input('purpose')), ['camping'])) {
                     $rules['camping_duration'] = 'required|integer|min:1';
                 }
             }
@@ -248,31 +253,41 @@ class HomeController extends Controller
             $requestedQty = 1 + count($members ?? []);
 
             // Check quota
-            if ($destination->daily_quota) {
+            if (!$this->booking->checkQuota($destination, $visitDate, $requestedQty)) {
                 $booked = Visitor::where('destination_id', $destination->id)
                     ->where('visit_date', $visitDate)
                     ->whereIn('status', ['pending', 'in'])
                     ->sum('qty_total');
-                if (($booked + $requestedQty) > $destination->daily_quota) {
-                    $remaining = max(0, $destination->daily_quota - $booked);
-                    return redirect()->route('destination.register.date', $slug)
-                        ->with('error', "Kuota tersisa {$remaining} orang, tidak cukup untuk {$requestedQty} orang.");
-                }
+                $remaining = max(0, $destination->daily_quota - $booked);
+                return redirect()->route('destination.register.date', $slug)
+                    ->with('error', "Kuota tersisa {$remaining} orang, tidak cukup untuk {$requestedQty} orang.");
             }
 
-            $totalAmount = $destination->price;
+            $purposeName = $request->input('purpose', 'Normal');
+            $dbPurposeName = $purposeName === 'Jiarah' ? 'Ziarah' : $purposeName;
+            $purp = $destination->active_purposes->firstWhere('name', $dbPurposeName);
+            $baseTicketPrice = ($purp && $purp->pivot && $purp->pivot->has_custom_price) ? (int)$purp->pivot->custom_price : (int)$destination->price;
+
+            $duration = 1;
+            if (in_array(strtolower($purposeName), ['camping'])) {
+                $duration = (int) $request->input('camping_duration', 1);
+                if ($duration < 1) $duration = 1;
+            }
+            $baseTicketPrice = $baseTicketPrice * $duration;
+
+            $totalAmount = $baseTicketPrice;
             $items = [
                 [
                     'name' => $request->input('name'),
-                    'price' => (int) $destination->price,
+                    'price' => $baseTicketPrice,
                     'quantity' => 1,
                 ]
             ];
             foreach ($members ?? [] as $member) {
                 $isChild = !empty($member['is_child']) && $member['is_child'] == '1';
                 $memberPrice = $isChild && $destination->kids_discount
-                    ? (int) round($destination->price * (1 - $destination->kids_discount / 100))
-                    : (int) $destination->price;
+                    ? (int) round($baseTicketPrice * (1 - $destination->kids_discount / 100))
+                    : $baseTicketPrice;
                 $totalAmount += $memberPrice;
                 $items[] = [
                     'name' => $member['name'],
@@ -301,7 +316,7 @@ class HomeController extends Controller
 
             if ($destination->has_purpose) {
                 $formData['leader']['purpose'] = $request->input('purpose');
-                $formData['leader']['camping_duration'] = ($request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null;
+                $formData['leader']['camping_duration'] = in_array(strtolower($request->input('purpose')), ['camping']) ? $request->input('camping_duration') : null;
             }
         } else {
             $rules = [
@@ -321,8 +336,11 @@ class HomeController extends Controller
             ];
 
             if ($destination->has_purpose) {
-                $rules['purpose'] = 'required|string|in:Hiking,Trail Run,Jiarah';
-                if ($request->input('purpose') === 'Hiking') {
+                $allowedPurposes = $destination->active_purposes->map(function($p) {
+                    return $p->name === 'Ziarah' ? ['Jiarah', 'Ziarah'] : [$p->name];
+                })->flatten()->unique()->toArray();
+                $rules['purpose'] = 'required|string|in:' . implode(',', $allowedPurposes);
+                if (in_array(strtolower($request->input('purpose')), ['camping'])) {
                     $rules['camping_duration'] = 'required|integer|min:1';
                 }
             }
@@ -343,19 +361,30 @@ class HomeController extends Controller
             $qtyTotal = $qtyMale + $qtyFemale + $qtyKids;
 
             // Check quota
-            if ($destination->daily_quota) {
+            if (!$this->booking->checkQuota($destination, $visitDate, $qtyTotal)) {
                 $booked = Visitor::where('destination_id', $destination->id)
                     ->where('visit_date', $visitDate)
                     ->whereIn('status', ['pending', 'in'])
                     ->sum('qty_total');
-                if (($booked + $qtyTotal) > $destination->daily_quota) {
-                    $remaining = max(0, $destination->daily_quota - $booked);
-                    return redirect()->route('destination.register.date', $slug)
-                        ->with('error', "Kuota tersisa {$remaining} orang, tidak cukup untuk {$qtyTotal} orang.");
-                }
+                $remaining = max(0, $destination->daily_quota - $booked);
+                return redirect()->route('destination.register.date', $slug)
+                    ->with('error', "Kuota tersisa {$remaining} orang, tidak cukup untuk {$qtyTotal} orang.");
             }
 
-            $totalAmount = $destination->price * $qtyTotal;
+            $purposeName = $request->input('purpose', 'Normal');
+            $dbPurposeName = $purposeName === 'Jiarah' ? 'Ziarah' : $purposeName;
+            $purp = $destination->active_purposes->firstWhere('name', $dbPurposeName);
+            $baseTicketPrice = ($purp && $purp->pivot && $purp->pivot->has_custom_price) ? (int)$purp->pivot->custom_price : (int)$destination->price;
+
+            $duration = 1;
+            if (in_array(strtolower($purposeName), ['camping'])) {
+                $duration = (int) $request->input('camping_duration', 1);
+                if ($duration < 1) $duration = 1;
+            }
+            $baseTicketPrice = $baseTicketPrice * $duration;
+
+            $kidsPrice = $destination->kids_discount > 0 ? (int) round($baseTicketPrice * (1 - $destination->kids_discount / 100)) : $baseTicketPrice;
+            $totalAmount = ($qtyMale + $qtyFemale) * $baseTicketPrice + $qtyKids * $kidsPrice;
 
             $formData = [
                 'has_member_details' => false,
@@ -380,7 +409,7 @@ class HomeController extends Controller
 
             if ($destination->has_purpose) {
                 $formData['leader']['purpose'] = $request->input('purpose');
-                $formData['leader']['camping_duration'] = ($request->input('purpose') === 'Hiking') ? $request->input('camping_duration') : null;
+                $formData['leader']['camping_duration'] = in_array(strtolower($request->input('purpose')), ['camping']) ? $request->input('camping_duration') : null;
             }
         }
 

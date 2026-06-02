@@ -125,6 +125,9 @@
             if (status === 'in') {
                 badge.className = 'inline-flex items-center mt-3 gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100';
                 badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Aktif — Di Dalam Lokasi';
+            } else if (status === 'pending') {
+                badge.className = 'inline-flex items-center mt-3 gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100';
+                badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Aktif — Belum Masuk';
             } else {
                 badge.className = 'inline-flex items-center mt-3 gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200';
                 badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Sudah Keluar';

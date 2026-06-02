@@ -226,6 +226,10 @@
                         <a href="{{ route('admin.users.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                             <i data-lucide="shield-check" class="w-5 h-5"></i> Kelola Pengguna
                         </a>
+
+                        <a href="{{ route('admin.purposes.index') }}" class="admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 {{ request()->routeIs('admin.purposes.*') ? 'active' : '' }}">
+                            <i data-lucide="compass" class="w-5 h-5"></i> Master Tujuan
+                        </a>
                     @endif
 
                     {{-- Visitor Accounts -- visible to admin/superadmin --}}

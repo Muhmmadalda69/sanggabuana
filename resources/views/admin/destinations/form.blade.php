@@ -117,14 +117,57 @@
                             </label>
                         </div>
 
-                        <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
+                        <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col gap-4">
                             <label class="flex items-start gap-3 cursor-pointer">
-                                <input type="checkbox" name="has_purpose" value="1" {{ old('has_purpose', $destination->has_purpose) ? 'checked' : '' }} class="w-5 h-5 mt-0.5 rounded text-forest-600 focus:ring-forest-500 border-gray-300">
+                                <input type="checkbox" name="has_purpose" id="has_purpose" value="1" {{ old('has_purpose', $destination->has_purpose) ? 'checked' : '' }} class="w-5 h-5 mt-0.5 rounded text-forest-600 focus:ring-forest-500 border-gray-300">
                                 <div>
                                     <div class="font-semibold text-gray-900 text-sm">Tujuan Kunjungan</div>
                                     <div class="text-xs text-gray-500 mt-1">Aktifkan dropdown "Tujuan Kunjungan" (Hiking, Trail Run, Ziarah).</div>
                                 </div>
                             </label>
+
+                            {{-- Purposes pricing list mapping --}}
+                            <div id="purposes-pricing-list" class="border-t border-gray-200/60 pt-4 space-y-3 hidden">
+                                <h4 class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Pengaturan Beda Harga per Tujuan</h4>
+                                <div class="grid grid-cols-1 gap-2.5">
+                                    @php
+                                        $mappedPurposes = $destination->exists ? $destination->purposes->keyBy('id') : collect();
+                                    @endphp
+                                    @foreach($purposes as $purp)
+                                        @php
+                                            $isActiveForDest = $purp->is_all_destinations || $mappedPurposes->has($purp->id);
+                                        @endphp
+                                        @if($isActiveForDest)
+                                            @php
+                                                $pivotData = $mappedPurposes->get($purp->id);
+                                                $hasCustomPrice = $pivotData ? $pivotData->pivot->has_custom_price : false;
+                                                $customPrice = $pivotData ? (int)$pivotData->pivot->custom_price : 0;
+                                            @endphp
+                                            {{-- Hidden input to ensure this purpose is always submitted --}}
+                                            <input type="hidden" name="purposes[{{ $purp->id }}][id]" value="{{ $purp->id }}">
+                                            <div class="p-3 bg-white border border-gray-100 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm hover:border-gray-200 transition-colors">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="w-2 h-2 rounded-full bg-forest-500 shrink-0"></span>
+                                                    <div>
+                                                        <span class="text-xs font-bold text-gray-800">{{ $purp->name }}</span>
+                                                        <span class="text-[10px] text-gray-400 font-mono mt-0.5 block leading-none">{{ $purp->slug }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-4 shrink-0">
+                                                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                                                        <input type="checkbox" name="purposes[{{ $purp->id }}][has_custom_price]" value="1" {{ old("purposes.{$purp->id}.has_custom_price", $hasCustomPrice) ? 'checked' : '' }} class="w-4 h-4 rounded text-forest-600 focus:ring-forest-500 border-gray-300 toggle-custom-price" data-target="price-input-{{ $purp->id }}">
+                                                        <span class="text-xs font-bold text-gray-600">Beda Harga</span>
+                                                    </label>
+                                                    <div id="price-input-{{ $purp->id }}" class="relative hidden shrink-0 w-32">
+                                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 text-xs font-bold pointer-events-none">Rp</span>
+                                                        <input type="number" name="purposes[{{ $purp->id }}][custom_price]" value="{{ old("purposes.{$purp->id}.custom_price", $customPrice) }}" min="0" placeholder="Harga..." class="w-full pl-8 pr-3 py-1 bg-gray-50/50 border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-forest-500 focus:bg-white transition-all text-center">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
 
                         <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col justify-between">
@@ -407,6 +450,40 @@
                 }
             }, 200);
         });
+
+        // Tujuan Kunjungan & Custom Pricing toggle
+        const $hasPurposeCheckbox = $('#has_purpose');
+        const $purposesPricingList = $('#purposes-pricing-list');
+
+        function togglePurposesPricingList() {
+            if ($hasPurposeCheckbox.is(':checked')) {
+                $purposesPricingList.removeClass('hidden');
+            } else {
+                $purposesPricingList.addClass('hidden');
+            }
+        }
+
+        function toggleCustomPriceInputs() {
+            $('.toggle-custom-price').each(function() {
+                const targetId = $(this).data('target');
+                const $target = $('#' + targetId);
+                if ($(this).is(':checked')) {
+                    $target.removeClass('hidden');
+                    $target.find('input').prop('disabled', false).attr('required', 'required');
+                } else {
+                    $target.addClass('hidden');
+                    $target.find('input').prop('disabled', true).removeAttr('required');
+                }
+            });
+        }
+
+        if ($hasPurposeCheckbox.length) {
+            $hasPurposeCheckbox.on('change', togglePurposesPricingList);
+            togglePurposesPricingList();
+        }
+
+        $(document).on('change', '.toggle-custom-price', toggleCustomPriceInputs);
+        toggleCustomPriceInputs();
     });
 </script>
 @endpush
